@@ -7,252 +7,267 @@
 <style>
 
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#0f0f12;
-    color:#e5e5e5;
-    position:relative;
-    overflow-x:hidden;
+margin:0;
+font-family:Arial,sans-serif;
+background:#0f0f12;
+color:#e5e5e5;
+overflow-x:hidden;
 }
 
 /* TRIANGLE BACKGROUND */
 
 .triangle-bg{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    z-index:-1;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:-1;
 }
 
 .triangle-bg svg{
-    width:100%;
-    height:100%;
+width:100%;
+height:100%;
 }
+
+/* triangle lines */
 
 .triangle-line{
-    stroke:#4a4a4a;
-    stroke-width:1;
+stroke:#2a2a2f;
+stroke-width:1;
+fill:none;
 }
+
+/* vertices */
 
 .vertex{
-    fill:white;
+fill:#bfbfbf;
 }
 
+/* glow moving along edges */
+
 .glow{
-    stroke:#7c8cff;
-    stroke-width:2;
-    stroke-linecap:round;
-    stroke-dasharray:2 20;
-    animation:flow 6s linear infinite;
+stroke:#7c8cff;
+stroke-width:2;
+stroke-linecap:round;
+stroke-dasharray:4 40;
+animation:flow 8s linear infinite;
+opacity:0.9;
+}
+
+.glow2{
+stroke:#9b6bff;
+stroke-width:2;
+stroke-linecap:round;
+stroke-dasharray:4 40;
+animation:flow 10s linear infinite;
 }
 
 @keyframes flow{
-    from{stroke-dashoffset:0;}
-    to{stroke-dashoffset:200;}
+from{stroke-dashoffset:0;}
+to{stroke-dashoffset:200;}
 }
 
 /* UI BOX STYLE */
 
 .ui-box{
-    background:#15151c;
-    border:1px solid #26263a;
-    border-radius:10px;
-    box-shadow:0 0 25px rgba(80,120,255,0.08);
+background:#15151c;
+border:1px solid #26263a;
+border-radius:10px;
+box-shadow:0 0 25px rgba(80,120,255,0.08);
 }
 
 /* NAVBAR */
 
 .navbar{
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:12px 16px;
-    margin:12px 0;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:12px 16px;
+margin:12px 0;
 }
 
 .nav-left{
-    display:flex;
-    gap:16px;
-    align-items:center;
+display:flex;
+gap:16px;
+align-items:center;
 }
 
 .nav-item{
-    cursor:pointer;
-    color:#d6d6ff;
-    font-weight:500;
+cursor:pointer;
+color:#d6d6ff;
+font-weight:500;
 }
 
 .nav-item:hover{
-    color:#6dd5ff;
+color:#6dd5ff;
 }
 
 /* PROMO POPUP */
 
 .promo-popup{
-    position:absolute;
-    top:55px;
-    left:50%;
-    transform:translateX(-50%);
-    background:#1b1b25;
-    border:1px solid #303048;
-    border-radius:6px;
-    padding:12px;
-    min-width:220px;
-    display:none;
-    z-index:200;
+position:absolute;
+top:55px;
+left:50%;
+transform:translateX(-50%);
+background:#1b1b25;
+border:1px solid #303048;
+border-radius:6px;
+padding:12px;
+min-width:220px;
+display:none;
+z-index:200;
 }
 
 .promo-popup input{
-    width:100%;
-    margin-bottom:8px;
-    padding:6px;
+width:100%;
+margin-bottom:8px;
+padding:6px;
 }
 
 .promo-popup button{
-    width:100%;
+width:100%;
 }
 
 /* DISCLAIMER */
 
 .disclaimer{
-    background:#111118;
-    border-bottom:1px solid #26263a;
-    overflow:hidden;
-    white-space:nowrap;
-    margin-top:10px;
+background:#111118;
+border-bottom:1px solid #26263a;
+overflow:hidden;
+white-space:nowrap;
+margin-top:10px;
 }
 
 .disclaimer span{
-    display:inline-block;
-    padding:6px 0;
-    animation:scroll 20s linear infinite;
-    color:#9aa6ff;
+display:inline-block;
+padding:6px 0;
+animation:scroll 20s linear infinite;
+color:#9aa6ff;
 }
 
 @keyframes scroll{
-    from{transform:translateX(100%)}
-    to{transform:translateX(-100%)}
+from{transform:translateX(100%)}
+to{transform:translateX(-100%)}
 }
 
 /* MAIN */
 
 .container{
-    max-width:700px;
-    margin:auto;
-    padding:20px;
-    margin-top:20px;
-    margin-left:12px;
-    margin-right:12px;
+max-width:700px;
+margin:auto;
+padding:20px;
+margin-top:20px;
+margin-left:12px;
+margin-right:12px;
 }
 
 .upload-box input[type="file"]{
-    width:250px;
-    color:#e5e5e5;
+width:250px;
+color:#e5e5e5;
 }
 
 button{
-    background:linear-gradient(90deg,#4fc3ff,#9b6bff);
-    border:none;
-    color:white;
-    padding:10px 16px;
-    border-radius:6px;
-    cursor:pointer;
+background:linear-gradient(90deg,#4fc3ff,#9b6bff);
+border:none;
+color:white;
+padding:10px 16px;
+border-radius:6px;
+cursor:pointer;
 }
 
 button:hover{
-    opacity:0.9;
+opacity:0.9;
 }
-    
+
 .generating{
-    background:#444 !important;
-    cursor:not-allowed;
-    opacity:0.7;
+background:#444 !important;
+cursor:not-allowed;
+opacity:0.7;
 }
 
 #output-box{
-    white-space:pre-wrap;
-    border:1px solid #26263a;
-    background:#15151c;
-    padding:16px;
-    border-radius:8px;
-    margin-top:20px;
+white-space:pre-wrap;
+border:1px solid #26263a;
+background:#15151c;
+padding:16px;
+border-radius:8px;
+margin-top:20px;
 }
 
 .copy-section{
-    margin-top:10px;
+margin-top:10px;
 }
 
 #copyStatus{
-    margin-left:10px;
-    color:#8affc1;
+margin-left:10px;
+color:#8affc1;
 }
 
 .credits{
-    margin-bottom:10px;
-    color:#a0a0ff;
+margin-bottom:10px;
+color:#a0a0ff;
 }
 
 hr{
-    border:none;
-    border-top:1px solid #26263a;
-    margin:20px 0;
+border:none;
+border-top:1px solid #26263a;
+margin:20px 0;
 }
 
 /* ACCOUNT SIDEBAR */
 
 .sidebar{
-    position:fixed;
-    top:0;
-    right:0;
-    width:280px;
-    height:100%;
-    background:#15151c;
-    border-left:1px solid #26263a;
-    padding:20px;
-    z-index:1000;
-    transform:translateX(100%);
-    transition:transform 0.3s ease;
+position:fixed;
+top:0;
+right:0;
+width:280px;
+height:100%;
+background:#15151c;
+border-left:1px solid #26263a;
+padding:20px;
+z-index:1000;
+transform:translateX(100%);
+transition:transform 0.3s ease;
 }
 
 .sidebar.open{
-    transform:translateX(0);
+transform:translateX(0);
 }
 
 .sidebar-header{
-    display:flex;
-    justify-content:space-between;
-    font-size:18px;
-    margin-bottom:20px;
+display:flex;
+justify-content:space-between;
+font-size:18px;
+margin-bottom:20px;
 }
 
 .close-btn{
-    cursor:pointer;
+cursor:pointer;
 }
 
 .sidebar a{
-    color:#d6d6ff;
-    text-decoration:none;
+color:#d6d6ff;
+text-decoration:none;
 }
 
 .sidebar a:hover{
-    color:#6dd5ff;
+color:#6dd5ff;
 }
 
 #sidebarOverlay{
-    position:fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background:rgba(0,0,0,0.6);
-    display:none;
-    z-index:900;
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.6);
+display:none;
+z-index:900;
 }
 
 #sidebarOverlay.show{
-    display:block;
+display:block;
 }
 
 </style>
@@ -260,38 +275,56 @@ hr{
 
 <body>
 
-<!-- TRIANGLE BACKGROUND -->
+<!-- TRIANGLE GRID BACKGROUND -->
 
 <div class="triangle-bg">
-<svg>
 
-<defs>
-<pattern id="triangles" width="80" height="70" patternUnits="userSpaceOnUse">
+<svg viewBox="0 0 1200 800" preserveAspectRatio="none">
 
-<path d="M0 70 L40 0 L80 70 Z" fill="none" class="triangle-line"/>
-<path d="M0 0 L40 70 L80 0 Z" fill="none" class="triangle-line"/>
+<!-- grid -->
 
-<circle cx="0" cy="70" r="2" class="vertex"/>
-<circle cx="40" cy="0" r="2" class="vertex"/>
-<circle cx="80" cy="70" r="2" class="vertex"/>
-<circle cx="40" cy="70" r="2" class="vertex"/>
-<circle cx="0" cy="0" r="2" class="vertex"/>
-<circle cx="80" cy="0" r="2" class="vertex"/>
+<g>
 
-</pattern>
-</defs>
+<!-- row 1 -->
+<path d="M0 80 L40 10 L80 80" class="triangle-line"/>
+<path d="M80 80 L120 10 L160 80" class="triangle-line"/>
+<path d="M160 80 L200 10 L240 80" class="triangle-line"/>
+<path d="M240 80 L280 10 L320 80" class="triangle-line"/>
 
-<rect width="100%" height="100%" fill="url(#triangles)"/>
+<!-- row 2 -->
+<path d="M40 10 L80 80 L120 10" class="triangle-line"/>
+<path d="M120 10 L160 80 L200 10" class="triangle-line"/>
+<path d="M200 10 L240 80 L280 10" class="triangle-line"/>
 
-<!-- glow flow lines -->
+</g>
 
-<line x1="0" y1="200" x2="1200" y2="200" class="glow"/>
-<line x1="200" y1="0" x2="200" y2="900" class="glow"/>
-<line x1="400" y1="0" x2="900" y2="700" class="glow"/>
-<line x1="1000" y1="0" x2="400" y2="900" class="glow"/>
+<!-- vertices -->
+
+<g>
+
+<circle cx="40" cy="10" r="1.8" class="vertex"/>
+<circle cx="80" cy="80" r="1.8" class="vertex"/>
+<circle cx="120" cy="10" r="1.8" class="vertex"/>
+<circle cx="160" cy="80" r="1.8" class="vertex"/>
+<circle cx="200" cy="10" r="1.8" class="vertex"/>
+<circle cx="240" cy="80" r="1.8" class="vertex"/>
+<circle cx="280" cy="10" r="1.8" class="vertex"/>
+
+</g>
+
+<!-- glow pulses along edges -->
+
+<path d="M0 80 L40 10 L80 80 L120 10 L160 80 L200 10"
+class="glow"/>
+
+<path d="M120 10 L160 80 L200 10 L240 80 L280 10"
+class="glow2"/>
 
 </svg>
+
 </div>
+
+<!-- everything below remains the same -->
 
 <!-- NAVBAR -->
 
