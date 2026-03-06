@@ -176,38 +176,40 @@ Buy Credits
 </a>
 </div>
 
-<div class="dropdown nav-item">
-Promo Code
-<div class="dropdown-content">
+<div class="dropdown">
+    <div class="nav-item" onclick="toggleDropdown('promoDropdown')">
+        Promo Code
+    </div>
 
-<form method="POST" action="/redeem">
-<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="dropdown-content" id="promoDropdown">
 
-<input type="text" name="promo_code" placeholder="Enter code" required>
+        <form method="POST" action="/redeem">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="promo_code" placeholder="Enter code" required>
+            <button type="submit">Redeem</button>
+        </form>
 
-<button type="submit">Redeem</button>
-
-</form>
-
+    </div>
 </div>
-</div>
 
-<div class="dropdown nav-item">
-Account
+<div class="dropdown">
+    <div class="nav-item" onclick="toggleDropdown('accountDropdown')">
+        Account
+    </div>
 
-<div class="dropdown-content">
+    <div class="dropdown-content" id="accountDropdown">
 
-<p>{{ current_user.email }}</p>
+        <p>{{ current_user.email }}</p>
 
-<a href="/logout">Logout</a>
-<br><br>
+        <a href="/logout">Logout</a>
+        <br><br>
 
-<a href="#">T&Cs</a>
-<br>
+        <a href="#">T&Cs</a>
+        <br>
 
-<a href="#">Delete Account</a>
+        <a href="#">Delete Account</a>
 
-</div>
+    </div>
 </div>
 
 {% if current_user.is_admin %}
