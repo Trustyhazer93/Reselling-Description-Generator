@@ -342,7 +342,9 @@ const status=document.getElementById("copyStatus");
 navigator.clipboard.writeText(text).then(()=>{
 status.innerText="Copied ✓";
 setTimeout(()=>{status.innerText="";},2000);
-}).catch(()=>{status.innerText="Copy failed";});
+}).catch(()=>{
+status.innerText="Copy failed";
+});
 
 }
 
@@ -361,6 +363,10 @@ popup.style.display="block";
 closeAccountSidebar();
 }
 
+}
+
+function closePromoPopup(){
+document.getElementById("promoPopup").style.display="none";
 }
 
 /* ACCOUNT SIDEBAR */
@@ -383,20 +389,26 @@ closePromoPopup();
 }
 
 function closeAccountSidebar(){
+
 document.getElementById("accountSidebar").classList.remove("open");
 document.getElementById("sidebarOverlay").classList.remove("show");
+
 }
 
-function closePromoPopup(){
-document.getElementById("promoPopup").style.display="none";
+/* CLICK OUTSIDE HANDLING */
+
+document.addEventListener("click",function(e){
+
+const popup=document.getElementById("promoPopup");
+const sidebar=document.getElementById("accountSidebar");
+
+if(!popup.contains(e.target)){
+popup.style.display="none";
 }
 
-/* CLICK OUTSIDE TO CLOSE */
-
-document.addEventListener("click",function(){
-
-closePromoPopup();
+if(!sidebar.contains(e.target)){
 closeAccountSidebar();
+}
 
 });
 
