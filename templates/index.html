@@ -20,6 +20,7 @@ body{
     justify-content:space-between;
     align-items:center;
     padding:12px 16px;
+    margin-top:12px;   /* NEW */
     background:#15151c;
     border-bottom:1px solid #26263a;
 }
@@ -73,6 +74,7 @@ body{
     border-bottom:1px solid #26263a;
     overflow:hidden;
     white-space:nowrap;
+    margin-top:10px; /* NEW */
 }
 
 .disclaimer span{
@@ -95,10 +97,12 @@ body{
     padding:20px;
 }
 
-.upload-box{
-    display:flex;
-    gap:10px;
-    margin-bottom:20px;
+.upload-box input[type="file"]{
+    background:#15151c;
+    border:1px solid #303048;
+    border-radius:6px;
+    padding:8px;
+    color:#e5e5e5;
 }
 
 .upload-box input{
@@ -116,6 +120,12 @@ button{
 
 button:hover{
     opacity:0.9;
+}
+    
+.generating{
+    background:#444 !important;
+    cursor:not-allowed;
+    opacity:0.7;
 }
 
 #output-box{
@@ -284,6 +294,10 @@ Disclaimer: These descriptions will not always be perfect or guarantee a sale!
 <button type="submit" id="generateBtn">Generate</button>
 </div>
 
+<div style="font-size:12px;color:#8a8aff;margin-top:-10px;">
+Max 5 images
+</div>
+
 </form>
 
 {% if listing %}
@@ -331,9 +345,13 @@ Disclaimer: These descriptions will not always be perfect or guarantee a sale!
 <script>
 
 function lockButton(){
+
 const btn=document.getElementById("generateBtn");
+
 btn.disabled=true;
+btn.classList.add("generating");  // NEW
 btn.innerText="Generating...";
+
 }
 
 function copyListing(){
