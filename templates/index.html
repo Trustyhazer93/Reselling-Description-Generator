@@ -40,33 +40,29 @@ body{
     color:#6dd5ff;
 }
 
-.dropdown{
-    position:relative;
-}
+/* PROMO POPUP */
 
-.dropdown-content{
-    display:none;
+.promo-popup{
     position:absolute;
-    top:30px;
+    top:55px;
+    left:50%;
+    transform:translateX(-50%);
     background:#1b1b25;
     border:1px solid #303048;
     border-radius:6px;
-    padding:10px;
-    min-width:200px;
-    z-index:100;
+    padding:12px;
+    min-width:220px;
+    display:none;
+    z-index:200;
 }
 
-.dropdown:hover .dropdown-content{
-    display:block;
-}
-
-.dropdown-content input{
+.promo-popup input{
     width:100%;
     margin-bottom:8px;
     padding:6px;
 }
 
-.dropdown-content button{
+.promo-popup button{
     width:100%;
 }
 
@@ -91,15 +87,13 @@ body{
     to{transform:translateX(-100%)}
 }
 
-/* MAIN CONTAINER */
+/* MAIN */
 
 .container{
     max-width:700px;
     margin:auto;
     padding:20px;
 }
-
-/* UPLOAD + GENERATE */
 
 .upload-box{
     display:flex;
@@ -124,8 +118,6 @@ button:hover{
     opacity:0.9;
 }
 
-/* OUTPUT */
-
 #output-box{
     white-space:pre-wrap;
     border:1px solid #26263a;
@@ -134,8 +126,6 @@ button:hover{
     border-radius:8px;
     margin-top:20px;
 }
-
-/* COPY */
 
 .copy-section{
     margin-top:10px;
@@ -157,6 +147,60 @@ hr{
     margin:20px 0;
 }
 
+/* ACCOUNT SIDEBAR */
+
+.sidebar{
+    position:fixed;
+    right:-300px;
+    top:0;
+    width:280px;
+    height:100%;
+    background:#15151c;
+    border-left:1px solid #26263a;
+    transition:0.3s;
+    z-index:1000;
+    padding:20px;
+}
+
+.sidebar.open{
+    right:0;
+}
+
+.sidebar-header{
+    display:flex;
+    justify-content:space-between;
+    font-size:18px;
+    margin-bottom:20px;
+}
+
+.close-btn{
+    cursor:pointer;
+}
+
+.sidebar a{
+    color:#d6d6ff;
+    text-decoration:none;
+}
+
+.sidebar a:hover{
+    color:#6dd5ff;
+}
+
+#sidebarOverlay{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    z-index:900;
+}
+
+#sidebarOverlay.show{
+    display:block;
+}
+
 </style>
 </head>
 
@@ -176,40 +220,12 @@ Buy Credits
 </a>
 </div>
 
-<div class="dropdown">
-    <div class="nav-item" onclick="toggleDropdown('promoDropdown')">
-        Promo Code
-    </div>
-
-    <div class="dropdown-content" id="promoDropdown">
-
-        <form method="POST" action="/redeem">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="text" name="promo_code" placeholder="Enter code" required>
-            <button type="submit">Redeem</button>
-        </form>
-
-    </div>
+<div class="nav-item" onclick="togglePromoPopup(event)">
+Promo Code
 </div>
 
-<div class="dropdown">
-    <div class="nav-item" onclick="toggleDropdown('accountDropdown')">
-        Account
-    </div>
-
-    <div class="dropdown-content" id="accountDropdown">
-
-        <p>{{ current_user.email }}</p>
-
-        <a href="/logout">Logout</a>
-        <br><br>
-
-        <a href="#">T&Cs</a>
-        <br>
-
-        <a href="#">Delete Account</a>
-
-    </div>
+<div class="nav-item" onclick="toggleAccountSidebar(event)">
+Account
 </div>
 
 {% if current_user.is_admin %}
@@ -221,6 +237,18 @@ Admin
 {% endif %}
 
 </div>
+</div>
+
+<!-- PROMO POPUP -->
+
+<div id="promoPopup" class="promo-popup">
+
+<form method="POST" action="/redeem">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="text" name="promo_code" placeholder="Enter code" required>
+<button type="submit">Redeem</button>
+</form>
+
 </div>
 
 <!-- DISCLAIMER -->
@@ -271,6 +299,33 @@ Disclaimer: These descriptions will not always be perfect or guarantee a sale!
 
 </div>
 
+<!-- ACCOUNT SIDEBAR -->
+
+<div id="accountSidebar" class="sidebar">
+
+<div class="sidebar-header">
+<span>Account</span>
+<span class="close-btn" onclick="closeAccountSidebar()">✕</span>
+</div>
+
+<p><strong>{{ current_user.email }}</strong></p>
+
+<hr>
+
+<a href="/logout">Logout</a>
+
+<br><br>
+
+<a href="#">T&Cs</a>
+
+<br><br>
+
+<a href="#">Delete Account</a>
+
+</div>
+
+<div id="sidebarOverlay"></div>
+
 <script>
 
 function lockButton(){
@@ -286,14 +341,64 @@ const status=document.getElementById("copyStatus");
 
 navigator.clipboard.writeText(text).then(()=>{
 status.innerText="Copied ✓";
-setTimeout(()=>{
-status.innerText="";
-},2000);
-}).catch(err=>{
-status.innerText="Copy failed";
-});
+setTimeout(()=>{status.innerText="";},2000);
+}).catch(()=>{status.innerText="Copy failed";});
 
 }
+
+/* PROMO POPUP */
+
+function togglePromoPopup(event){
+
+event.stopPropagation();
+
+const popup=document.getElementById("promoPopup");
+
+if(popup.style.display==="block"){
+popup.style.display="none";
+}else{
+popup.style.display="block";
+closeAccountSidebar();
+}
+
+}
+
+/* ACCOUNT SIDEBAR */
+
+function toggleAccountSidebar(event){
+
+event.stopPropagation();
+
+const sidebar=document.getElementById("accountSidebar");
+const overlay=document.getElementById("sidebarOverlay");
+
+if(sidebar.classList.contains("open")){
+closeAccountSidebar();
+}else{
+sidebar.classList.add("open");
+overlay.classList.add("show");
+closePromoPopup();
+}
+
+}
+
+function closeAccountSidebar(){
+document.getElementById("accountSidebar").classList.remove("open");
+document.getElementById("sidebarOverlay").classList.remove("show");
+}
+
+function closePromoPopup(){
+document.getElementById("promoPopup").style.display="none";
+}
+
+/* CLICK OUTSIDE TO CLOSE */
+
+document.addEventListener("click",function(){
+
+closePromoPopup();
+closeAccountSidebar();
+
+});
 
 </script>
 
