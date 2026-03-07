@@ -177,7 +177,8 @@ flex-wrap:nowrap;
 }
 
 .upload-box input[type="file"]{
-width:250px;
+flex:1;
+min-width:0;
 color:#e5e5e5;
 }
 
@@ -305,10 +306,11 @@ display:block;
 
 <div class="nav-left">
 
-{% if request.endpoint != "index" %}
-<a class="nav-item" href="/generator">Generator</a>
-{% endif %}
-<div class="nav-item">
+<a class="nav-item" href="/generator"
+{% if request.endpoint == "index" %}onclick="return false;" style="opacity:0.6;cursor:default;"{% endif %}>
+Generator
+</a>
+
 <a href="/buy-credits" style="color:inherit;text-decoration:none;">
 Buy Credits
 </a>
