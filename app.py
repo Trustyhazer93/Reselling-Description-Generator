@@ -25,6 +25,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from sqlalchemy import func
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 
 # -------------------------
@@ -34,6 +35,7 @@ from sqlalchemy import func
 load_dotenv()
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 csrf = CSRFProtect(app)
 limiter = Limiter(
     key_func=lambda: current_user.id if current_user.is_authenticated else get_remote_address(),
@@ -344,6 +346,10 @@ def verify_turnstile(token):
 
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    if current_user.is_authenticated:
+        print("LOGIN ROUTE: user already authenticated")
+        return redirect(url_for("index"))
+
     if request.method == "POST":
         email = request.form.get("email").lower().strip()
         password = request.form.get("password")
@@ -352,8 +358,10 @@ def login():
 
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
+            print(f"LOGIN SUCCESS: {user.email}, authenticated={current_user.is_authenticated}")
             return redirect(url_for("index"))
 
+        print(f"LOGIN FAILED: {email}")
         return render_template("login.html", error="Invalid email or password.")
 
     return render_template("login.html")
@@ -361,13 +369,15 @@ def login():
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
+
     if request.method == "POST":
         turnstile_token = request.form.get("cf-turnstile-response")
 
         if not verify_turnstile(turnstile_token):
             return render_template("register.html", error="CAPTCHA verification failed. Please try again.")
 
-        # Existing code continues normally
         email = request.form.get("email").lower().strip()
         password = request.form.get("password")
 
@@ -395,7 +405,7 @@ def register():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for("login"))
+    return redirect(url_for("home"))
 
 @app.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
@@ -531,8 +541,10 @@ def terms():
 def privacy():
     return render_template("privacy.html")
 
-@app.route("/")
+@app.route("/home")
 def home():
+    if current_user.is_authenticated:
+        return redirect(url_for("index"))
 
     total_generations = db.session.query(func.count(Generation.id)).scalar()
 
@@ -545,10 +557,11 @@ def home():
 # MAIN ROUTE
 # -------------------------
 
-@app.route("/", methods=["GET", "POST"])
+@app.route("/generator", methods=["GET", "POST"])
 @login_required
 @limiter.limit("5 per minute; 50 per hour; 200 per day")
 def index():
+
     listing = None
 
     if request.method == "POST":
@@ -617,4 +630,3 @@ def index():
 
 if __name__ == "__main__":
     app.run()
-
