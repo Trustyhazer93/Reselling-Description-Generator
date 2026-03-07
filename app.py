@@ -539,7 +539,7 @@ def terms():
 def privacy():
     return render_template("privacy.html")
 
-@app.route("/home")
+@app.route("/")
 def home():
     if current_user.is_authenticated:
         return redirect(url_for("index"))
