@@ -541,9 +541,6 @@ def privacy():
 
 @app.route("/")
 def home():
-    if current_user.is_authenticated:
-        return redirect(url_for("index"))
-
     total_generations = db.session.query(func.count(Generation.id)).scalar()
 
     return render_template(
