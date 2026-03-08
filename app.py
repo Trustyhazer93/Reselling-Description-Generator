@@ -90,7 +90,10 @@ FLAWS HANDLING
 ALWAYS include a Flaws section directly after the Condition line.
 
 If flaws ARE visible:
-- List each flaw as a bullet point starting with "- ".
+- Write "Flaws:" on its own line.
+- Put each flaw on the next lines as bullet points starting with "- ".
+- Do not place a flaw on the same line as "Flaws:".
+- Do not repeat any flaw.
 - Each bullet must be one short factual sentence.
 
 If NO flaws are visible:
@@ -197,81 +200,100 @@ def validate_and_fix_listing(raw_output):
         return "Error generating full listing.", True
 
     fallback_used = False
-
     raw_output = raw_output.strip().replace("\r\n", "\n")
 
-    sections = {
-        "Title:": "",
-        "Brand:": "",
-        "Size:": "",
-        "Condition:": "",
-        "Flaws:": ""
-    }
-
-    for key in sections.keys():
+    def get_single_line_value(label):
         match = re.search(
-            rf"^{re.escape(key)}\s*(.*)$",
+            rf"^{re.escape(label)}\s*(.*)$",
             raw_output,
             flags=re.MULTILINE
         )
-        if match:
-            sections[key] = match.group(1).strip()
+        return match.group(1).strip() if match else ""
 
-    # Fallback title if missing
-    if not sections["Title:"]:
-        sections["Title:"] = "Clothing Item"
+    title = get_single_line_value("Title:")
+    brand = get_single_line_value("Brand:")
+    size = get_single_line_value("Size:")
+    condition = get_single_line_value("Condition:")
+
+    if not title:
+        title = "Clothing Item"
         fallback_used = True
 
-    # Mark fallback if condition missing
-    if not sections["Condition:"]:
+    if not condition:
         fallback_used = True
 
-    # Default flaws if missing
-    # Clean and deduplicate flaws
-    flaws_text = sections["Flaws:"]
+    # Capture the whole Flaws block, including bullet lines underneath it,
+    # until the next blank line or hashtag line.
+    flaws_block_match = re.search(
+        r"^Flaws:\s*(.*?)(?=\n\s*\n|\n#|$)",
+        raw_output,
+        flags=re.MULTILINE | re.DOTALL
+    )
 
-    if flaws_text and flaws_text.lower() != "none":
+    flaws_value = "None"
 
-        # split possible bullet points
-        flaw_lines = re.split(r"\n|- ", flaws_text)
+    if flaws_block_match:
+        flaws_raw = flaws_block_match.group(1).strip()
 
-        cleaned = []
-        seen = set()
+        if flaws_raw and flaws_raw.lower() != "none":
+            flaw_lines = []
 
-        for flaw in flaw_lines:
-            flaw = flaw.strip()
-            if not flaw:
-                continue
+            for line in flaws_raw.split("\n"):
+                cleaned_line = line.strip()
 
-            normalized = flaw.lower()
+                if not cleaned_line:
+                    continue
 
-            if normalized not in seen:
-                seen.add(normalized)
-                cleaned.append(f"- {flaw}")
+                # remove leading bullet/dash if present
+                cleaned_line = re.sub(r"^-\s*", "", cleaned_line).strip()
 
-        if cleaned:
-            sections["Flaws:"] = "\n".join(cleaned)
+                if cleaned_line:
+                    flaw_lines.append(cleaned_line)
+
+            # deduplicate while preserving order
+            seen = set()
+            unique_flaws = []
+            for flaw in flaw_lines:
+                normalized = flaw.lower()
+                if normalized not in seen:
+                    seen.add(normalized)
+                    unique_flaws.append(flaw)
+
+            if unique_flaws:
+                flaws_value = "\n" + "\n".join(f"- {flaw}" for flaw in unique_flaws)
+            else:
+                flaws_value = "None"
+                fallback_used = True
         else:
-            sections["Flaws:"] = "None"
-
+            flaws_value = "None"
     else:
-        sections["Flaws:"] = "None"
+        flaws_value = "None"
+        fallback_used = True
 
-    # Remove all header lines so only description + hashtags remain
-    body = re.sub(r"^Title:.*$\n?", "", raw_output, flags=re.MULTILINE)
+    # Remove ALL header sections from body, including multiline Flaws block
+    body = raw_output
+
+    body = re.sub(r"^Title:.*$\n?", "", body, flags=re.MULTILINE)
     body = re.sub(r"^Brand:.*$\n?", "", body, flags=re.MULTILINE)
     body = re.sub(r"^Size:.*$\n?", "", body, flags=re.MULTILINE)
     body = re.sub(r"^Condition:.*$\n?", "", body, flags=re.MULTILINE)
-    body = re.sub(r"^Flaws:.*$\n?", "", body, flags=re.MULTILINE)
+
+    # remove the entire Flaws block, including bullet lines under it
+    body = re.sub(
+        r"^Flaws:\s*(.*?)(?=\n\s*\n|\n#|$)",
+        "",
+        body,
+        flags=re.MULTILINE | re.DOTALL
+    )
 
     body = body.strip()
 
     rebuilt = (
-        f"Title: {sections['Title:']}\n\n"
-        f"Brand: {sections['Brand:']}\n"
-        f"Size: {sections['Size:']}\n"
-        f"Condition: {sections['Condition:']}\n"
-        f"Flaws: {sections['Flaws:']}"
+        f"Title: {title}\n\n"
+        f"Brand: {brand}\n"
+        f"Size: {size}\n"
+        f"Condition: {condition}\n"
+        f"Flaws: {flaws_value}"
     )
 
     if body:
@@ -621,6 +643,34 @@ def home():
         "home.html",
         total_generations=total_generations
     )
+
+@app.route("/delete-account", methods=["POST"])
+@login_required
+def delete_account():
+    user = User.query.get(current_user.id)
+
+    if not user:
+        return redirect(url_for("login"))
+
+    try:
+        user_id = user.id
+
+        PromoRedemption.query.filter_by(user_id=user_id).delete()
+        Generation.query.filter_by(user_id=user_id).delete()
+        User.query.filter_by(id=user_id).delete()
+
+        db.session.commit()
+
+        logout_user()
+        session.clear()
+
+        return redirect(url_for("home"))
+
+    except Exception as e:
+        logging.error(f"Delete account error: {e}")
+        db.session.rollback()
+        session["listing"] = "There was a problem deleting your account. Please try again."
+        return redirect(url_for("index"))
 
 # -------------------------
 # MAIN ROUTE
