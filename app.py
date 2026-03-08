@@ -645,7 +645,8 @@ def login():
                 response = make_response(render_template(
                     "login.html",
                     error="Please verify your email before logging in.",
-                    email=email
+                    email=email,
+                    show_resend=True
                 ))
                 response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
                 response.headers["Pragma"] = "no-cache"
@@ -659,13 +660,18 @@ def login():
             "login.html",
             error="Invalid email or password.",
             email=email
+            show_resend=False
         ))
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         return response
 
-    response = make_response(render_template("login.html", email=""))
+    response = make_response(render_template(
+        "login.html",
+         email="",
+         show_resend=False
+         ))
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
@@ -991,11 +997,7 @@ def resend_verification():
         return response
 
     if user.is_verified:
-        response = make_response(render_template(
-            "login.html",
-            message="Your email is already verified.",
-            email=email
-        ))
+        response = make_response(redirect(url_for("login")))
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
@@ -1006,7 +1008,8 @@ def resend_verification():
     response = make_response(render_template(
         "login.html",
         message="Verification email resent. Please check your inbox.",
-        email=email
+        email=email,
+        show_resend=True
     ))
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"

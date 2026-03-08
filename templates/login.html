@@ -235,6 +235,7 @@ button:hover{
             <button type="submit">Log In</button>
         </form>
         
+        {% if show_resend %}
         <div style="margin-top:12px; text-align:center;">
             <p style="font-size:13px; color:#aaa;">
                 Didn't receive your verification email?
@@ -246,7 +247,7 @@ button:hover{
                 <input 
                     type="email" 
                     name="email" 
-                    placeholder="Enter your email" 
+                    placeholder="Enter your email"
                     value="{{ email or '' }}"
                     required
                     style="width:100%; margin-bottom:8px;"
@@ -257,6 +258,7 @@ button:hover{
                 </button>
             </form>
         </div>
+        {% endif %}
         
         <div class="links">
             <a href="/forgot-password">Forgot password?</a>
