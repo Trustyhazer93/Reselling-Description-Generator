@@ -443,7 +443,7 @@ def send_verification_email(to_email):
             "Content-Type": "application/json",
         },
         json={
-            "from": "onboarding@resend.dev",
+            "from": "Reseller Descriptions <noreply@resellerdescriptions.com>",
             "to": to_email,
             "subject": "Verify Your Email",
             "text": f"Click the link below to verify your email:\n\n{verify_url}\n\nIf you did not create this account, you can ignore this email.",
