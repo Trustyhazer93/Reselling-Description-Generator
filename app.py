@@ -967,6 +967,26 @@ def delete_account():
         session["listing"] = "There was a problem deleting your account. Please try again."
         return redirect(url_for("index"))
 
+@app.route("/resend-verification", methods=["POST"])
+@limiter.limit("5 per hour")
+def resend_verification():
+    email = request.form.get("email", "").lower().strip()
+    normalized_email = normalize_email(email)
+
+    user = User.query.filter_by(normalized_email=normalized_email).first()
+
+    if not user:
+        return render_template("login.html", error="Account not found.")
+
+    if user.is_verified:
+        return render_template("login.html", message="Your email is already verified.")
+
+    send_verification_email(user.email)
+
+    return render_template(
+        "login.html",
+        message="Verification email resent. Please check your inbox."
+    )
 
 # -------------------------
 # MAIN ROUTE

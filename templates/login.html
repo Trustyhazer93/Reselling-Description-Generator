@@ -220,7 +220,26 @@ button:hover{
 
             <button type="submit">Log In</button>
         </form>
+        
+        <div style="margin-top:12px; text-align:center;">
+            <p style="font-size:13px; color:#aaa;">
+                Didn't receive your verification email?
+            </p>
 
+            <form method="POST" action="/resend-verification">
+                <input 
+                    type="email" 
+                    name="email" 
+                    placeholder="Enter your email" 
+                    required
+                    style="width:100%; margin-bottom:8px;"
+                >
+                <button type="submit" style="width:100%;">
+                    Resend verification email
+                </button>
+            </form>
+        </div>
+        
         <div class="links">
             <a href="/forgot-password">Forgot password?</a>
             <br><br>
