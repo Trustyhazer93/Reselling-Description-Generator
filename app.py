@@ -659,7 +659,7 @@ def login():
         response = make_response(render_template(
             "login.html",
             error="Invalid email or password.",
-            email=email
+            email=email,
             show_resend=False
         ))
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
