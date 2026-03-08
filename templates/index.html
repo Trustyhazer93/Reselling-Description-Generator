@@ -303,14 +303,11 @@ display:block;
 <!-- NAVBAR -->
 
 <div class="navbar ui-box">
-
 <div class="nav-left">
 
-<a class="nav-item" href="/generator"
-{% if request.endpoint == "index" %}onclick="return false;" style="opacity:0.6;cursor:default;"{% endif %}>
-Generator
-</a>
+<div class="nav-item">Generator</div>
 
+<div class="nav-item">
 <a href="/buy-credits" style="color:inherit;text-decoration:none;">
 Buy Credits
 </a>
