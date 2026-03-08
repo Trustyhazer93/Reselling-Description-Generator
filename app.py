@@ -2,7 +2,7 @@ import base64
 import os
 import logging
 import re
-from flask import Flask, render_template, request, redirect, url_for,make_response
+from flask import Flask, render_template, request, redirect, url_for,make_response, session
 from openai import OpenAI
 from dotenv import load_dotenv
 from PIL import Image
@@ -573,25 +573,29 @@ def home():
 @login_required
 @limiter.limit("10 per minute; 100 per hour; 400 per day")
 def index():
-    listing = None
+    listing = session.pop("listing", None)
 
     if request.method == "POST":
 
         user = db.session.query(User).with_for_update().filter_by(id=current_user.id).first()
 
         if user.is_generating:
-            return render_template("index.html", listing="Generation already in progress.")
+            session["listing"] = "Generation already in progress."
+            return redirect(url_for("index"))
 
         if not user.is_admin and user.credits <= 0:
-            return render_template("index.html", listing="You have no credits remaining.")
+            session["listing"] = "You have no credits remaining."
+            return redirect(url_for("index"))
 
         images = request.files.getlist("images")
 
         if not images or images[0].filename == "":
-            return render_template("index.html", listing="Please upload at least one image.")
+            session["listing"] = "Please upload at least one image."
+            return redirect(url_for("index"))
 
         if len(images) > MAX_IMAGES:
-            return render_template("index.html", listing=f"Maximum {MAX_IMAGES} images allowed.")
+            session["listing"] = f"Maximum {MAX_IMAGES} images allowed."
+            return redirect(url_for("index"))
 
         try:
             user.is_generating = True
@@ -616,9 +620,10 @@ def index():
                 result=listing
             )
 
-
             db.session.add(generation)
             db.session.commit()
+
+            session["listing"] = listing
 
         except Exception as e:
             logging.error(f"Generation error: {e}")
@@ -629,12 +634,14 @@ def index():
                 user.credits += 1
             db.session.commit()
 
-            listing = "Error generating listing. Please try again."
+            session["listing"] = "Error generating listing. Please try again."
 
         finally:
             user = User.query.get(current_user.id)
             user.is_generating = False
             db.session.commit()
+
+        return redirect(url_for("index"))
 
     return render_template("index.html", listing=listing)
 
