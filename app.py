@@ -401,7 +401,74 @@ def verify_turnstile(token):
 
 
 
+with app.app_context():
+    from sqlalchemy import text
 
+    db.create_all()
+
+    # Add redeemed_email column if missing
+    result = db.session.execute(text("""
+        SELECT column_name
+        FROM information_schema.columns
+        WHERE table_name='promo_redemption' AND column_name='redeemed_email';
+    """))
+    column_exists = result.fetchone()
+
+    if not column_exists:
+        db.session.execute(text("""
+            ALTER TABLE promo_redemption
+            ADD COLUMN redeemed_email VARCHAR(120);
+        """))
+        db.session.commit()
+        print("redeemed_email column added.")
+    else:
+        print("redeemed_email column already exists.")
+
+    # Backfill redeemed_email for existing rows
+    db.session.execute(text("""
+        UPDATE promo_redemption pr
+        SET redeemed_email = u.email
+        FROM "user" u
+        WHERE pr.user_id = u.id
+        AND pr.redeemed_email IS NULL;
+    """))
+    db.session.commit()
+
+    # Make redeemed_email NOT NULL after backfill
+    result = db.session.execute(text("""
+        SELECT is_nullable
+        FROM information_schema.columns
+        WHERE table_name='promo_redemption' AND column_name='redeemed_email';
+    """))
+    redeemed_email_nullable = result.fetchone()
+
+    if redeemed_email_nullable and redeemed_email_nullable[0] == "YES":
+        db.session.execute(text("""
+            ALTER TABLE promo_redemption
+            ALTER COLUMN redeemed_email SET NOT NULL;
+        """))
+        db.session.commit()
+        print("redeemed_email set to NOT NULL.")
+    else:
+        print("redeemed_email already NOT NULL.")
+
+    # Make user_id nullable in the actual database
+    result = db.session.execute(text("""
+        SELECT is_nullable
+        FROM information_schema.columns
+        WHERE table_name='promo_redemption' AND column_name='user_id';
+    """))
+    user_id_nullable = result.fetchone()
+
+    if user_id_nullable and user_id_nullable[0] == "NO":
+        db.session.execute(text("""
+            ALTER TABLE promo_redemption
+            ALTER COLUMN user_id DROP NOT NULL;
+        """))
+        db.session.commit()
+        print("promo_redemption.user_id is now nullable.")
+    else:
+        print("promo_redemption.user_id already nullable.")
 # -------------------------
 # AUTH ROUTES
 # -------------------------
