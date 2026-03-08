@@ -379,7 +379,11 @@ def register():
         turnstile_token = request.form.get("cf-turnstile-response")
 
         if not verify_turnstile(turnstile_token):
-            response = make_response(render_template("register.html", error="CAPTCHA verification failed. Please try again."))
+            response = make_response(render_template(
+                "register.html",
+                error="CAPTCHA verification failed. Please try again.",
+                turnstile_site_key=os.getenv("TURNSTILE_SITE_KEY")
+            ))
             response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
@@ -389,7 +393,11 @@ def register():
         password = request.form.get("password")
 
         if User.query.filter_by(email=email).first():
-            response = make_response(render_template("register.html", error="Email already registered."))
+            response = make_response(render_template(
+                "register.html",
+                error="Email already registered.",
+                turnstile_site_key=os.getenv("TURNSTILE_SITE_KEY")
+            ))
             response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
             response.headers["Pragma"] = "no-cache"
             response.headers["Expires"] = "0"
@@ -409,7 +417,10 @@ def register():
         login_user(new_user)
         return redirect(url_for("index"))
 
-    response = make_response(render_template("register.html"))
+    response = make_response(render_template(
+        "register.html",
+        turnstile_site_key=os.getenv("TURNSTILE_SITE_KEY")
+    ))
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
