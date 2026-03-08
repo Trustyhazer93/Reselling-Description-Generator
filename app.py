@@ -183,8 +183,9 @@ class PromoCode(db.Model):
 
 class PromoRedemption(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     promo_id = db.Column(db.Integer, db.ForeignKey("promo_code.id"), nullable=False)
+    redeemed_email = db.Column(db.String(120), nullable=False)
     redeemed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 @login_manager.user_loader
@@ -558,9 +559,12 @@ def redeem_code():
         return redirect(url_for("index"))
 
     # Check if THIS user already redeemed
-    existing = PromoRedemption.query.filter_by(
-        user_id=current_user.id,
-        promo_id=promo.id
+    existing = PromoRedemption.query.filter(
+        PromoRedemption.promo_id == promo.id,
+        db.or_(
+            PromoRedemption.user_id == current_user.id,
+            PromoRedemption.redeemed_email == current_user.email
+        )
     ).first()
 
     if existing:
@@ -575,7 +579,8 @@ def redeem_code():
 
     redemption = PromoRedemption(
         user_id=user.id,
-        promo_id=promo.id
+        promo_id=promo.id,
+        redeemed_email=user.email
     )
 
     db.session.add(redemption)
@@ -655,7 +660,7 @@ def delete_account():
     try:
         user_id = user.id
 
-        PromoRedemption.query.filter_by(user_id=user_id).delete()
+        PromoRedemption.query.filter_by(user_id=user_id).update({"user_id": None})
         Generation.query.filter_by(user_id=user_id).delete()
         User.query.filter_by(id=user_id).delete()
 
