@@ -227,9 +227,35 @@ def validate_and_fix_listing(raw_output):
         fallback_used = True
 
     # Default flaws if missing
-    if not sections["Flaws:"]:
+    # Clean and deduplicate flaws
+    flaws_text = sections["Flaws:"]
+
+    if flaws_text and flaws_text.lower() != "none":
+
+        # split possible bullet points
+        flaw_lines = re.split(r"\n|- ", flaws_text)
+
+        cleaned = []
+        seen = set()
+
+        for flaw in flaw_lines:
+            flaw = flaw.strip()
+            if not flaw:
+                continue
+
+            normalized = flaw.lower()
+
+            if normalized not in seen:
+                seen.add(normalized)
+                cleaned.append(f"- {flaw}")
+
+        if cleaned:
+            sections["Flaws:"] = "\n".join(cleaned)
+        else:
+            sections["Flaws:"] = "None"
+
+    else:
         sections["Flaws:"] = "None"
-        fallback_used = True
 
     # Remove all header lines so only description + hashtags remain
     body = re.sub(r"^Title:.*$\n?", "", raw_output, flags=re.MULTILINE)
