@@ -553,17 +553,17 @@ def redeem_code():
         session["listing"] = "Invalid or inactive code."
         return redirect(url_for("index"))
 
-    # Check usage limit
     if promo.max_uses and promo.uses_count >= promo.max_uses:
         session["listing"] = "This code has reached its usage limit."
         return redirect(url_for("index"))
 
-    # Check if THIS user already redeemed
+    user = User.query.get(current_user.id)
+
     existing = PromoRedemption.query.filter(
         PromoRedemption.promo_id == promo.id,
         db.or_(
             PromoRedemption.user_id == current_user.id,
-            PromoRedemption.redeemed_email == current_user.email
+            PromoRedemption.redeemed_email == user.email
         )
     ).first()
 
@@ -571,10 +571,7 @@ def redeem_code():
         session["listing"] = "You have already used this code."
         return redirect(url_for("index"))
 
-    # Apply credits
-    user = User.query.get(current_user.id)
     user.credits += promo.credits
-
     promo.uses_count += 1
 
     redemption = PromoRedemption(
