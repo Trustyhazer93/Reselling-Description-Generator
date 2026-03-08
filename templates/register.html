@@ -202,6 +202,16 @@ text-decoration:none;
 color:#6dd5ff;
 }
 
+.message{
+    background:#13261b;
+    border:1px solid #29543a;
+    color:#b9f5cb;
+    padding:10px 12px;
+    border-radius:8px;
+    margin-bottom:16px;
+    font-size:14px;
+}
+
 /* DESKTOP */
 
 @media (min-width:768px){
@@ -239,6 +249,10 @@ font-size:15px;
 
 {% if error %}
 <div class="error">{{ error }}</div>
+{% endif %}
+
+{% if message %}
+<div class="message">{{ message }}</div>
 {% endif %}
 
 <form method="POST">
