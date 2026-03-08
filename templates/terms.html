@@ -60,7 +60,7 @@ border-color:#6dd5ff;
 
 <div class="ui-box">
 
-<a href="/" class="back-btn">← Back to Generator</a>
+<a href="#" class="back-btn" onclick="goBack(event)">← Back</a>
 
 <h1>Terms & Conditions</h1>
 
@@ -181,6 +181,18 @@ For questions please contact: <br>
 </div>
 
 </div>
+
+<script>
+function goBack(event){
+event.preventDefault();
+
+if(document.referrer){
+window.history.back();
+}else{
+window.location.href="{% if current_user.is_authenticated %}{{ url_for('index') }}{% else %}{{ url_for('home') }}{% endif %}";
+}
+}
+</script>
 
 </body>
 </html>
