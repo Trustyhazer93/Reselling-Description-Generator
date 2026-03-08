@@ -40,7 +40,7 @@ limiter = Limiter(
     app=app,
     default_limits=[]
 )
-app.config["SERVER_NAME"] = "resellerdescriptions.com"
+app.config["SERVER_NAME"] = "www.resellerdescriptions.com"
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace(
     "postgres://", "postgresql://"
