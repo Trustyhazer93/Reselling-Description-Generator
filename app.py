@@ -634,7 +634,7 @@ def login():
         return redirect(url_for("index"))
 
     if request.method == "POST":
-        email = request.form.get("email").lower().strip()
+        email = request.form.get("email", "").lower().strip()
         normalized_email = normalize_email(email)
         password = request.form.get("password")
 
@@ -644,7 +644,8 @@ def login():
             if not user.is_verified:
                 response = make_response(render_template(
                     "login.html",
-                    error="Please verify your email before logging in."
+                    error="Please verify your email before logging in.",
+                    email=email
                 ))
                 response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
                 response.headers["Pragma"] = "no-cache"
@@ -654,18 +655,21 @@ def login():
             login_user(user)
             return redirect(url_for("index"))
 
-        response = make_response(render_template("login.html", error="Invalid email or password."))
+        response = make_response(render_template(
+            "login.html",
+            error="Invalid email or password.",
+            email=email
+        ))
         response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
         return response
 
-    response = make_response(render_template("login.html"))
+    response = make_response(render_template("login.html", email=""))
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"
     return response
-
 
 @app.route("/register", methods=["GET", "POST"])
 def register():
@@ -976,17 +980,38 @@ def resend_verification():
     user = User.query.filter_by(normalized_email=normalized_email).first()
 
     if not user:
-        return render_template("login.html", error="Account not found.")
+        response = make_response(render_template(
+            "login.html",
+            error="Account not found.",
+            email=email
+        ))
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
     if user.is_verified:
-        return render_template("login.html", message="Your email is already verified.")
+        response = make_response(render_template(
+            "login.html",
+            message="Your email is already verified.",
+            email=email
+        ))
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
 
     send_verification_email(user.email)
 
-    return render_template(
+    response = make_response(render_template(
         "login.html",
-        message="Verification email resent. Please check your inbox."
-    )
+        message="Verification email resent. Please check your inbox.",
+        email=email
+    ))
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
+    return response
 
 # -------------------------
 # MAIN ROUTE
