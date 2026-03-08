@@ -466,16 +466,22 @@ def reset_password(token):
 @app.route("/redeem", methods=["POST"])
 @login_required
 def redeem_code():
-    code_input = request.form.get("promo_code").strip().upper()
+    code_input = request.form.get("promo_code", "").strip().upper()
+
+    if not code_input:
+        session["listing"] = "Please enter a promo code."
+        return redirect(url_for("index"))
 
     promo = PromoCode.query.filter_by(code=code_input).first()
 
     if not promo or not promo.is_active:
-        return render_template("index.html", listing="Invalid or inactive code.")
+        session["listing"] = "Invalid or inactive code."
+        return redirect(url_for("index"))
 
     # Check usage limit
     if promo.max_uses and promo.uses_count >= promo.max_uses:
-        return render_template("index.html", listing="This code has reached its usage limit.")
+        session["listing"] = "This code has reached its usage limit."
+        return redirect(url_for("index"))
 
     # Check if THIS user already redeemed
     existing = PromoRedemption.query.filter_by(
@@ -484,7 +490,8 @@ def redeem_code():
     ).first()
 
     if existing:
-        return render_template("index.html", listing="You have already used this code.")
+        session["listing"] = "You have already used this code."
+        return redirect(url_for("index"))
 
     # Apply credits
     user = User.query.get(current_user.id)
@@ -500,10 +507,8 @@ def redeem_code():
     db.session.add(redemption)
     db.session.commit()
 
-    return render_template(
-        "index.html",
-        listing=f"Promo applied! {promo.credits} credits added."
-    )
+    session["listing"] = f"Promo applied! {promo.credits} credits added."
+    return redirect(url_for("index"))
 
 @app.route("/admin/promos")
 @login_required
