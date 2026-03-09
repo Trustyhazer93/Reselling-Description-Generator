@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from PIL import Image
 import io
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 from flask_login import (
     LoginManager,
     login_user,
@@ -467,163 +467,6 @@ def verify_turnstile(token):
     return result.get("success", False)
 
 
-with app.app_context():
-    from sqlalchemy import text
-
-    db.create_all()
-
-    is_verified_added = False
-
-    result = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name='user' AND column_name='normalized_email';
-    """))
-    if not result.fetchone():
-        db.session.execute(text("""
-            ALTER TABLE "user"
-            ADD COLUMN normalized_email VARCHAR(120);
-        """))
-        db.session.commit()
-        print("normalized_email column added to user.")
-    else:
-        print("normalized_email column already exists on user.")
-
-    result = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name='user' AND column_name='is_verified';
-    """))
-    if not result.fetchone():
-        db.session.execute(text("""
-            ALTER TABLE "user"
-            ADD COLUMN is_verified BOOLEAN DEFAULT FALSE;
-        """))
-        db.session.commit()
-        is_verified_added = True
-        print("is_verified column added to user.")
-    else:
-        print("is_verified column already exists on user.")
-
-    result = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name='promo_redemption' AND column_name='redeemed_email';
-    """))
-    if not result.fetchone():
-        db.session.execute(text("""
-            ALTER TABLE promo_redemption
-            ADD COLUMN redeemed_email VARCHAR(120);
-        """))
-        db.session.commit()
-        print("redeemed_email column added.")
-    else:
-        print("redeemed_email column already exists.")
-
-    result = db.session.execute(text("""
-        SELECT column_name
-        FROM information_schema.columns
-        WHERE table_name='promo_redemption' AND column_name='redeemed_email_normalized';
-    """))
-    if not result.fetchone():
-        db.session.execute(text("""
-            ALTER TABLE promo_redemption
-            ADD COLUMN redeemed_email_normalized VARCHAR(120);
-        """))
-        db.session.commit()
-        print("redeemed_email_normalized column added.")
-    else:
-        print("redeemed_email_normalized column already exists.")
-
-    db.session.execute(text("""
-        UPDATE promo_redemption pr
-        SET redeemed_email = u.email
-        FROM "user" u
-        WHERE pr.user_id = u.id
-        AND pr.redeemed_email IS NULL;
-    """))
-    db.session.commit()
-
-    result = db.session.execute(text("""
-        SELECT is_nullable
-        FROM information_schema.columns
-        WHERE table_name='promo_redemption' AND column_name='redeemed_email';
-    """))
-    redeemed_email_nullable = result.fetchone()
-
-    if redeemed_email_nullable and redeemed_email_nullable[0] == "YES":
-        result = db.session.execute(text("""
-            SELECT COUNT(*)
-            FROM promo_redemption
-            WHERE redeemed_email IS NULL;
-        """))
-        null_count = result.fetchone()[0]
-
-        if null_count == 0:
-            db.session.execute(text("""
-                ALTER TABLE promo_redemption
-                ALTER COLUMN redeemed_email SET NOT NULL;
-            """))
-            db.session.commit()
-            print("redeemed_email set to NOT NULL.")
-        else:
-            print("redeemed_email still has NULL values; NOT NULL not applied.")
-    else:
-        print("redeemed_email already NOT NULL.")
-
-    result = db.session.execute(text("""
-        SELECT is_nullable
-        FROM information_schema.columns
-        WHERE table_name='promo_redemption' AND column_name='user_id';
-    """))
-    user_id_nullable = result.fetchone()
-
-    if user_id_nullable and user_id_nullable[0] == "NO":
-        db.session.execute(text("""
-            ALTER TABLE promo_redemption
-            ALTER COLUMN user_id DROP NOT NULL;
-        """))
-        db.session.commit()
-        print("promo_redemption.user_id is now nullable.")
-    else:
-        print("promo_redemption.user_id already nullable.")
-
-    users = User.query.all()
-    for user in users:
-        changed = False
-
-        normalized = normalize_email(user.email)
-        if user.normalized_email != normalized:
-            user.normalized_email = normalized
-            changed = True
-
-        if is_verified_added:
-            user.is_verified = True
-            changed = True
-
-        if changed:
-            db.session.add(user)
-
-    db.session.commit()
-    print("User backfill complete.")
-
-    redemptions = PromoRedemption.query.all()
-    for redemption in redemptions:
-        changed = False
-
-        if redemption.redeemed_email:
-            normalized = normalize_email(redemption.redeemed_email)
-            if redemption.redeemed_email_normalized != normalized:
-                redemption.redeemed_email_normalized = normalized
-                changed = True
-
-        if changed:
-            db.session.add(redemption)
-
-    db.session.commit()
-    print("Promo redemption backfill complete.")
-
-
 # -------------------------
 # AUTH ROUTES
 # -------------------------
@@ -890,8 +733,23 @@ def admin_promos():
         return redirect(url_for("index"))
 
     promos = PromoCode.query.order_by(PromoCode.created_at.desc()).all()
-    return render_template("admin_promos.html", promos=promos)
 
+    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+
+    active_customers = db.session.query(
+        func.count(func.distinct(Generation.user_id))
+    ).filter(
+        Generation.created_at >= thirty_days_ago
+    ).scalar()
+
+    total_customers = db.session.query(func.count(User.id)).scalar()
+
+    return render_template(
+        "admin_promos.html",
+        promos=promos,
+        active_customers=active_customers,
+        total_customers=total_customers
+    )
 
 @app.route("/admin/promos/create", methods=["POST"])
 @login_required
