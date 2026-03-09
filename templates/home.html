@@ -412,6 +412,18 @@ a{
     color:#6dd5ff;
 }
 
+.example-image{
+        padding:16px;
+        text-align:center;
+    }
+
+.example-image img{
+    width:100%;
+    max-width:900px;
+    height:auto;
+    border-radius:10px;
+}
+
 /* DESKTOP */
 
 @media (min-width: 768px){
@@ -607,17 +619,6 @@ a{
         font-size:14px;
     }
 
-    .example-image{
-        padding:16px;
-        text-align:center;
-    }
-
-    .example-image img{
-        width:100%;
-        max-width:900px;
-        height:auto;
-        border-radius:10px;
-    }
 }
 
 </style>
@@ -663,6 +664,7 @@ a{
             <div class="hero-note">
                 Built for anyone selling items online who wants to create clear, structured listings faster without the repetitive typing.
             </div>
+        </div>
     </section>
 
     <section class="section">
@@ -699,7 +701,7 @@ a{
         </p>
 
         <div class="example-image ui-box">
-            <img src="{{ url_for('static', filename='Reseller_example.PNG') }}" 
+            <img src="{{ url_for('static', filename='images/Reseller_example.PNG') }}"
                 alt="Example AI generated listing">
         </div>
     </section>
