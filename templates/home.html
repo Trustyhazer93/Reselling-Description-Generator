@@ -454,9 +454,9 @@ a{
     .generation-count{
         position:absolute;
         right:40px;
-        top:260px;
+        top:305px;
         margin-top:0;
-        font-size:15px;
+        font-size:17px;
     }
 
     .eyebrow{
@@ -606,6 +606,18 @@ a{
     .footer-links a{
         font-size:14px;
     }
+
+    .example-image{
+        padding:16px;
+        text-align:center;
+    }
+
+    .example-image img{
+        width:100%;
+        max-width:900px;
+        height:auto;
+        border-radius:10px;
+    }
 }
 
 </style>
@@ -651,22 +663,6 @@ a{
             <div class="hero-note">
                 Built for anyone selling items online who wants to create clear, structured listings faster without the repetitive typing.
             </div>
-
-            <div class="preview-box">
-                <div class="preview-label">Example output</div>
-                <div class="preview-output">Title: Polo Ralph Lauren Long Sleeve Striped Rugby Shirt, Navy/White, Medium
-
-Brand: Polo Ralph Lauren
-Size: M
-Condition: Very Good
-
-Flaws: - There is a small yellow stain on the white stripe.
-
-This classic Polo Ralph Lauren rugby shirt features bold navy and white stripes, perfect for casual outings or sporty occasions. The custom fit ensures a comfortable wear, while the embroidered logo and number 3 add a stylish touch. Ideal for layering or wearing on its own, this shirt combines timeless style with functionality.
-
-#poloralphlauren #rugbyshirt #stripedshirt #casualwear #mensfashion</div>
-            </div>
-        </div>
     </section>
 
     <section class="section">
@@ -693,6 +689,18 @@ This classic Polo Ralph Lauren rugby shirt features bold navy and white stripes,
                 <h3>Copy and list</h3>
                 <p>Review the output, copy it into your resale listing, then make any changes you want.</p>
             </div>
+        </div>
+    </section>
+
+    <section class="section">
+        <h2 class="section-title">Example listing generated</h2>
+        <p class="section-subtitle">
+            Example listing generated from uploaded item photos.
+        </p>
+
+        <div class="example-image ui-box">
+            <img src="{{ url_for('static', filename='Reseller_example.PNG') }}" 
+                alt="Example AI generated listing">
         </div>
     </section>
 
@@ -774,9 +782,14 @@ This classic Polo Ralph Lauren rugby shirt features bold navy and white stripes,
 
             <div class="footer-links">
                 <a href="/login">Log In</a>
+                <span>•</span>
                 <a href="/register">Register</a>
+                <span>•</span>
                 <a href="/terms">Terms & Conditions</a>
+                <span>•</span>
                 <a href="/privacy">Privacy Policy</a>
+                <span>•</span>
+                <a href="mailto:support@resellerdescriptions.com">Support</a>
             </div>
         </div>
     </footer>
