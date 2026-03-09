@@ -968,7 +968,11 @@ def buy_credits():
         logging.error(f"Stripe checkout creation error: {e}")
         session["listing"] = "Could not start checkout. Please try again."
         return redirect(url_for("index"))
-
+@app.route("/buy-credits")
+@login_required
+def buy_credits_page():
+    return render_template("buy_credits.html")
+    
 @app.route("/stripe-webhook", methods=["POST"])
 @csrf.exempt
 def stripe_webhook():

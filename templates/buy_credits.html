@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Buy Credits</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial, sans-serif;
+    background:#0f0f12;
+    color:#e5e5e5;
+}
+
+/* PAGE CONTAINER */
+
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:40px 20px;
+    text-align:center;
+}
+
+/* TITLE */
+
+h1{
+    margin-bottom:10px;
+}
+
+.subtitle{
+    color:#9ca3af;
+    margin-bottom:40px;
+}
+
+/* CREDIT CARDS */
+
+.pricing{
+    display:flex;
+    gap:20px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.card{
+    background:#17171c;
+    border:1px solid #2a2a33;
+    padding:30px;
+    width:240px;
+    border-radius:8px;
+}
+
+.card h2{
+    margin:0 0 10px 0;
+}
+
+.price{
+    font-size:26px;
+    margin:10px 0 20px 0;
+}
+
+/* BUTTON */
+
+button{
+    background:#6366f1;
+    border:none;
+    padding:12px 18px;
+    color:white;
+    border-radius:6px;
+    cursor:pointer;
+    width:100%;
+    font-size:16px;
+}
+
+button:hover{
+    background:#4f46e5;
+}
+
+</style>
+</head>
+
+<body>
+
+<a href="/generator" style="color:#9ca3af;">← Back</a>
+
+<div class="container">
+
+<h1>Buy Credits</h1>
+<p class="subtitle">Generate AI descriptions for your listings</p>
+
+<div class="pricing">
+
+<div class="card">
+<h2>50 Credits</h2>
+<div class="price">£5</div>
+
+<form method="POST" action="/buy-credits">
+<input type="hidden" name="pack" value="50">
+<button type="submit">Buy 50 Credits</button>
+</form>
+
+</div>
+
+<div class="card">
+<h2>200 Credits</h2>
+<div class="price">£15</div>
+
+<form method="POST" action="/buy-credits">
+<input type="hidden" name="pack" value="200">
+<button type="submit">Buy 200 Credits</button>
+</form>
+
+</div>
+
+<div class="card">
+<h2>600 Credits</h2>
+<div class="price">£35</div>
+
+<form method="POST" action="/buy-credits">
+<input type="hidden" name="pack" value="600">
+<button type="submit">Buy 600 Credits</button>
+</form>
+
+</div>
+
+</div>
+
+</div>
+
+</body>
+</html>
