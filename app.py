@@ -729,6 +729,9 @@ def redeem_code():
 from datetime import datetime, timedelta
 from sqlalchemy import func
 
+from datetime import datetime, timedelta
+from sqlalchemy import func
+
 @app.route("/admin/promos")
 @login_required
 def admin_promos():
@@ -745,13 +748,18 @@ def admin_promos():
         Generation.created_at >= thirty_days_ago
     ).scalar()
 
+    total_promo_uses = db.session.query(
+        func.coalesce(func.sum(PromoCode.uses_count), 0)
+    ).scalar()
+
     estimated_profit = "0.00"
 
     return render_template(
         "admin_promos.html",
         promos=promos,
         active_customers=active_customers,
-        estimated_profit=estimated_profit
+        estimated_profit=estimated_profit,
+        total_promo_uses=total_promo_uses
     )
 
 @app.route("/admin/promos/create", methods=["POST"])
