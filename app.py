@@ -25,6 +25,7 @@ from flask_wtf.csrf import CSRFProtect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from sqlalchemy import func
+import stripe
 
 
 # -------------------------
@@ -46,6 +47,15 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL").replace(
     "postgres://", "postgresql://"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["STRIPE_SECRET_KEY"] = os.getenv("STRIPE_SECRET_KEY")
+app.config["STRIPE_PUBLISHABLE_KEY"] = os.getenv("STRIPE_PUBLISHABLE_KEY")
+app.config["STRIPE_WEBHOOK_SECRET"] = os.getenv("STRIPE_WEBHOOK_SECRET")
+
+app.config["STRIPE_PRICE_50"] = os.getenv("STRIPE_PRICE_50")
+app.config["STRIPE_PRICE_200"] = os.getenv("STRIPE_PRICE_200")
+app.config["STRIPE_PRICE_600"] = os.getenv("STRIPE_PRICE_600")
+
+stripe.api_key = app.config["STRIPE_SECRET_KEY"]
 
 serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
 
@@ -213,12 +223,41 @@ class PromoRedemption(db.Model):
     redeemed_email_normalized = db.Column(db.String(120), nullable=True)
     redeemed_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Payment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    stripe_session_id = db.Column(db.String(255), unique=True, nullable=False)
+    stripe_payment_intent_id = db.Column(db.String(255), nullable=True)
+    stripe_customer_email = db.Column(db.String(120), nullable=True)
+    amount_total = db.Column(db.Integer, nullable=True)
+    currency = db.Column(db.String(20), nullable=True)
+    credits_added = db.Column(db.Integer, nullable=False)
+    status = db.Column(db.String(50), default="pending")
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
+def get_credit_pack(pack_key):
+    packs = {
+        "50": {
+            "credits": 50,
+            "price_id": app.config["STRIPE_PRICE_50"]
+        },
+        "200": {
+            "credits": 200,
+            "price_id": app.config["STRIPE_PRICE_200"]
+        },
+        "600": {
+            "credits": 600,
+            "price_id": app.config["STRIPE_PRICE_600"]
+        }
+    }
+    return packs.get(pack_key)
 
+with app.app_context():
+    db.create_all()
 # -------------------------
 # OUTPUT VALIDATION
 # -------------------------
@@ -885,6 +924,138 @@ def resend_verification():
     response.headers["Expires"] = "0"
     return response
 
+@app.route("/buy-credits", methods=["POST"])
+@login_required
+def buy_credits():
+    if not current_user.is_verified:
+        session["listing"] = "Please verify your email before purchasing credits."
+        return redirect(url_for("index"))
+
+    pack_key = request.form.get("pack")
+    pack = get_credit_pack(pack_key)
+
+    if not pack:
+        session["listing"] = "Invalid credit pack selected."
+        return redirect(url_for("index"))
+
+    if not pack["price_id"]:
+        session["listing"] = "Payment option is not configured correctly."
+        return redirect(url_for("index"))
+
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            mode="payment",
+            line_items=[
+                {
+                    "price": pack["price_id"],
+                    "quantity": 1,
+                }
+            ],
+            success_url=url_for("index", _external=True) + "?payment=success",
+            cancel_url=url_for("index", _external=True) + "?payment=cancelled",
+            client_reference_id=str(current_user.id),
+            customer_email=current_user.email,
+            metadata={
+                "user_id": str(current_user.id),
+                "credits": str(pack["credits"]),
+                "pack": str(pack_key),
+            }
+        )
+
+        return redirect(checkout_session.url, code=303)
+
+    except Exception as e:
+        logging.error(f"Stripe checkout creation error: {e}")
+        session["listing"] = "Could not start checkout. Please try again."
+        return redirect(url_for("index"))
+
+@app.route("/stripe-webhook", methods=["POST"])
+@csrf.exempt
+def stripe_webhook():
+    payload = request.data
+    sig_header = request.headers.get("Stripe-Signature")
+    webhook_secret = app.config["STRIPE_WEBHOOK_SECRET"]
+
+    try:
+        event = stripe.Webhook.construct_event(
+            payload=payload,
+            sig_header=sig_header,
+            secret=webhook_secret
+        )
+    except ValueError:
+        return "Invalid payload", 400
+    except stripe.error.SignatureVerificationError:
+        return "Invalid signature", 400
+
+    event_type = event["type"]
+
+    if event_type in ["checkout.session.completed", "checkout.session.async_payment_succeeded"]:
+        checkout_session = event["data"]["object"]
+
+        payment_status = checkout_session.get("payment_status")
+        if payment_status != "paid":
+            return "OK", 200
+
+        stripe_session_id = checkout_session.get("id")
+
+        existing_payment = Payment.query.filter_by(stripe_session_id=stripe_session_id).first()
+        if existing_payment:
+            return "OK", 200
+
+        user_id = checkout_session.get("metadata", {}).get("user_id")
+        credits = checkout_session.get("metadata", {}).get("credits")
+
+        if not user_id or not credits:
+            logging.error("Stripe webhook missing metadata.")
+            return "Missing metadata", 400
+
+        user = User.query.get(int(user_id))
+        if not user:
+            logging.error(f"Stripe webhook user not found: {user_id}")
+            return "User not found", 400
+
+        credits_to_add = int(credits)
+
+        payment = Payment(
+            user_id=user.id,
+            stripe_session_id=stripe_session_id,
+            stripe_payment_intent_id=checkout_session.get("payment_intent"),
+            stripe_customer_email=checkout_session.get("customer_email"),
+            amount_total=checkout_session.get("amount_total"),
+            currency=checkout_session.get("currency"),
+            credits_added=credits_to_add,
+            status="completed"
+        )
+
+        user.credits += credits_to_add
+
+        db.session.add(payment)
+        db.session.commit()
+
+    elif event_type == "checkout.session.async_payment_failed":
+        checkout_session = event["data"]["object"]
+        stripe_session_id = checkout_session.get("id")
+
+        existing_payment = Payment.query.filter_by(stripe_session_id=stripe_session_id).first()
+        if not existing_payment:
+            user_id = checkout_session.get("metadata", {}).get("user_id")
+            credits = checkout_session.get("metadata", {}).get("credits")
+
+            if user_id and credits:
+                payment = Payment(
+                    user_id=int(user_id),
+                    stripe_session_id=stripe_session_id,
+                    stripe_payment_intent_id=checkout_session.get("payment_intent"),
+                    stripe_customer_email=checkout_session.get("customer_email"),
+                    amount_total=checkout_session.get("amount_total"),
+                    currency=checkout_session.get("currency"),
+                    credits_added=int(credits),
+                    status="failed"
+                )
+                db.session.add(payment)
+                db.session.commit()
+
+    return "OK", 200
 # -------------------------
 # MAIN ROUTE
 # -------------------------
@@ -963,7 +1134,11 @@ def index():
 
         return redirect(url_for("index"))
 
-    return render_template("index.html", listing=listing)
+    return render_template(
+    "index.html",
+    listing=listing,
+    stripe_publishable_key=app.config["STRIPE_PUBLISHABLE_KEY"]
+)
 
 
 if __name__ == "__main__":
