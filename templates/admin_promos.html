@@ -1,55 +1,426 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Promo Code Admin</title>
+    <title>Promo Code Admin - Reseller Descriptions</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+
+    body{
+        margin:0;
+        font-family:Arial,sans-serif;
+        background:#0f0f12;
+        color:#e5e5e5;
+        overflow-x:hidden;
+        min-height:100vh;
+    }
+
+    /* BACKGROUND TRIANGLE GRID */
+
+    .triangle-bg{
+        position:fixed;
+        top:0;
+        left:0;
+        width:100%;
+        height:100%;
+        z-index:-1;
+        pointer-events:none;
+    }
+
+    .triangle-grid{
+        position:absolute;
+        width:100%;
+        height:100%;
+        background-image:
+            linear-gradient(60deg,#2a2a2f 1px,transparent 1px),
+            linear-gradient(-60deg,#2a2a2f 1px,transparent 1px),
+            linear-gradient(0deg,#2a2a2f 1px,transparent 1px);
+        background-size:80px 70px;
+        opacity:0.35;
+    }
+
+    .triangle-grid::after{
+        content:"";
+        position:absolute;
+        width:100%;
+        height:100%;
+        background-image:radial-gradient(circle,#7a7a7a 1.4px,transparent 2px);
+        background-size:80px 70px;
+        opacity:0.25;
+    }
+
+    .glow-layer{
+        position:absolute;
+        width:200%;
+        height:200%;
+        background:
+            radial-gradient(circle at 30% 40%, rgba(120,140,255,0.18), transparent 200px),
+            radial-gradient(circle at 70% 70%, rgba(155,107,255,0.18), transparent 220px),
+            radial-gradient(circle at 40% 80%, rgba(80,200,255,0.14), transparent 220px);
+        animation:glowMove 25s linear infinite;
+    }
+
+    @keyframes glowMove{
+        0%{transform:translate(-10%,-10%)}
+        50%{transform:translate(-20%,-30%)}
+        100%{transform:translate(-10%,-10%)}
+    }
+
+    .page-wrap{
+        max-width:1100px;
+        margin:0 auto;
+        padding:12px;
+        box-sizing:border-box;
+    }
+
+    .ui-box{
+        background:#15151c;
+        border:1px solid #26263a;
+        border-radius:12px;
+        box-shadow:0 0 25px rgba(80,120,255,0.08);
+    }
+
+    .topbar{
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        gap:12px;
+        padding:16px 18px;
+        margin-bottom:18px;
+        flex-wrap:wrap;
+    }
+
+    .brand{
+        font-size:18px;
+        font-weight:700;
+        color:#ffffff;
+    }
+
+    .back-link{
+        display:inline-block;
+        padding:10px 14px;
+        border:1px solid #303048;
+        border-radius:8px;
+        color:#d6d6ff;
+        text-decoration:none;
+        background:#1a1a23;
+        font-size:14px;
+        font-weight:600;
+    }
+
+    .back-link:hover{
+        border-color:#6dd5ff;
+        color:#6dd5ff;
+    }
+
+    .hero-box{
+        padding:22px 18px;
+        margin-bottom:18px;
+    }
+
+    .hero-box h1{
+        margin:0 0 8px 0;
+        font-size:28px;
+        color:#ffffff;
+    }
+
+    .hero-box p{
+        margin:0;
+        color:#aeb3c8;
+        line-height:1.55;
+        font-size:14px;
+    }
+
+    .stats-grid{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:12px;
+        margin-bottom:18px;
+    }
+
+    .stat-card{
+        padding:16px;
+    }
+
+    .stat-label{
+        font-size:12px;
+        text-transform:uppercase;
+        letter-spacing:0.7px;
+        color:#8f97bb;
+        margin-bottom:8px;
+    }
+
+    .stat-value{
+        font-size:28px;
+        font-weight:700;
+        color:#ffffff;
+    }
+
+    .content-grid{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:18px;
+    }
+
+    .section-box{
+        padding:18px;
+    }
+
+    .section-box h2{
+        margin:0 0 14px 0;
+        font-size:22px;
+        color:#ffffff;
+    }
+
+    .section-box h3{
+        margin:0 0 14px 0;
+        font-size:20px;
+        color:#ffffff;
+    }
+
+    .section-subtext{
+        margin:-4px 0 16px 0;
+        color:#aeb3c8;
+        font-size:14px;
+        line-height:1.5;
+    }
+
+    .form-grid{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:14px;
+    }
+
+    .field label{
+        display:block;
+        font-size:13px;
+        color:#cfd4ea;
+        margin-bottom:6px;
+    }
+
+    .field input{
+        width:100%;
+        box-sizing:border-box;
+        padding:12px 14px;
+        border-radius:8px;
+        border:1px solid #303048;
+        background:#111118;
+        color:#e5e5e5;
+        font-size:15px;
+        outline:none;
+    }
+
+    .field input:focus{
+        border-color:#6dd5ff;
+    }
+
+    .submit-btn{
+        display:inline-block;
+        background:linear-gradient(90deg,#4fc3ff,#9b6bff);
+        color:white;
+        padding:12px 18px;
+        border:none;
+        border-radius:8px;
+        cursor:pointer;
+        font-size:15px;
+        font-weight:600;
+        margin-top:4px;
+    }
+
+    .submit-btn:hover{
+        opacity:0.92;
+    }
+
+    .table-wrap{
+        overflow-x:auto;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        min-width:700px;
+    }
+
+    th, td{
+        text-align:left;
+        padding:12px 10px;
+        border-bottom:1px solid #2a2a3a;
+        font-size:14px;
+    }
+
+    th{
+        color:#cfd4ea;
+        font-weight:600;
+    }
+
+    td{
+        color:#e5e5e5;
+    }
+
+    .status-pill{
+        display:inline-block;
+        padding:6px 10px;
+        border-radius:999px;
+        font-size:12px;
+        font-weight:600;
+    }
+
+    .status-active{
+        background:rgba(79,195,255,0.10);
+        color:#8fdcff;
+        border:1px solid #2d3e5e;
+    }
+
+    .status-disabled{
+        background:rgba(255,120,120,0.10);
+        color:#ffb0b0;
+        border:1px solid #5a2a34;
+    }
+
+    .action-link{
+        color:#d6d6ff;
+        text-decoration:none;
+        font-weight:600;
+    }
+
+    .action-link:hover{
+        color:#6dd5ff;
+    }
+
+    @media (min-width:768px){
+
+        .page-wrap{
+            padding:12px 14px 32px 14px;
+        }
+
+        .hero-box{
+            padding:28px 24px;
+        }
+
+        .hero-box h1{
+            font-size:32px;
+        }
+
+        .stats-grid{
+            grid-template-columns:repeat(3,1fr);
+        }
+
+        .content-grid{
+            grid-template-columns:360px 1fr;
+            align-items:start;
+        }
+    }
+
+    </style>
 </head>
 <body>
 
-<h2>Promo Code Management</h2>
+<div class="triangle-bg">
+    <div class="triangle-grid"></div>
+    <div class="glow-layer"></div>
+</div>
 
-<a href="/">Back to main</a>
+<div class="page-wrap">
 
-<hr>
+    <div class="topbar ui-box">
+        <div class="brand">Reseller Descriptions Admin</div>
+        <a href="{{ url_for('index') }}" class="back-link">← Back to Generator</a>
+    </div>
 
-<h3>Create New Code</h3>
+    <div class="hero-box ui-box">
+        <h1>Promo Code Management</h1>
+        <p>Manage promo codes, monitor usage, and track live customer activity from one place.</p>
+    </div>
 
-<form method="POST" action="/admin/promos/create">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    Code: <input type="text" name="code" required>
-    Credits: <input type="number" name="credits" required>
-    Max Uses (optional): <input type="number" name="max_uses">
-    <button type="submit">Create</button>
-</form>
+    <div class="stats-grid">
+        <div class="stat-card ui-box">
+            <div class="stat-label">Active Customers (30 Days)</div>
+            <div class="stat-value">{{ active_customers }}</div>
+        </div>
 
-<hr>
+        <div class="stat-card ui-box">
+            <div class="stat-label">Total Customers</div>
+            <div class="stat-value">{{ total_customers }}</div>
+        </div>
 
-<h3>Existing Codes</h3>
+        <div class="stat-card ui-box">
+            <div class="stat-label">Total Promo Codes</div>
+            <div class="stat-value">{{ promos|length }}</div>
+        </div>
+    </div>
 
-<table border="1" cellpadding="8">
-    <tr>
-        <th>Code</th>
-        <th>Credits</th>
-        <th>Status</th>
-        <th>Uses</th>
-        <th>Max Uses</th>
-        <th>Action</th>
-    </tr>
+    <div class="content-grid">
 
-    {% for promo in promos %}
-    <tr>
-        <td>{{ promo.code }}</td>
-        <td>{{ promo.credits }}</td>
-        <td>{{ "Active" if promo.is_active else "Disabled" }}</td>
-        <td>{{ promo.uses_count }}</td>
-        <td>{{ promo.max_uses or "Unlimited" }}</td>
-        <td>
-            <a href="/admin/promos/toggle/{{ promo.id }}">
-                {{ "Disable" if promo.is_active else "Enable" }}
-            </a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
+        <div class="section-box ui-box">
+            <h2>Create New Code</h2>
+            <p class="section-subtext">Add a new promo code and choose how many credits it gives users.</p>
+
+            <form method="POST" action="/admin/promos/create">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="code">Promo Code</label>
+                        <input type="text" id="code" name="code" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="credits">Credits</label>
+                        <input type="number" id="credits" name="credits" required>
+                    </div>
+
+                    <div class="field">
+                        <label for="max_uses">Max Uses (optional)</label>
+                        <input type="number" id="max_uses" name="max_uses">
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">Create Promo Code</button>
+            </form>
+        </div>
+
+        <div class="section-box ui-box">
+            <h3>Existing Codes</h3>
+            <p class="section-subtext">View current promo codes, usage totals, and enable or disable them.</p>
+
+            <div class="table-wrap">
+                <table>
+                    <tr>
+                        <th>Code</th>
+                        <th>Credits</th>
+                        <th>Status</th>
+                        <th>Uses</th>
+                        <th>Max Uses</th>
+                        <th>Action</th>
+                    </tr>
+
+                    {% for promo in promos %}
+                    <tr>
+                        <td>{{ promo.code }}</td>
+                        <td>{{ promo.credits }}</td>
+                        <td>
+                            {% if promo.is_active %}
+                                <span class="status-pill status-active">Active</span>
+                            {% else %}
+                                <span class="status-pill status-disabled">Disabled</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ promo.uses_count }}</td>
+                        <td>{{ promo.max_uses or "Unlimited" }}</td>
+                        <td>
+                            <a href="/admin/promos/toggle/{{ promo.id }}" class="action-link">
+                                {{ "Disable" if promo.is_active else "Enable" }}
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
 
 </body>
 </html>
