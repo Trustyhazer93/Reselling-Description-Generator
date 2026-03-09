@@ -530,9 +530,7 @@ min-width:170px;
 <div class="nav-item">Generator</div>
 
 <div class="nav-item">
-<a href="/buy-credits">
-<button>Buy Credits</button>
-</a>
+<a href="/buy-credits" class="nav-item">Buy Credits</a>
 </div>
 
 <div class="nav-item" onclick="togglePromoPopup(event)">
@@ -581,6 +579,7 @@ Admin
 <div class="container ui-box">
 
 <h2>Generate your listing</h2>
+<p>Generations are not instant please be patient</p>
 
 {% if current_user.is_admin %}
 <p class="credits"><strong>Admin Account – Unlimited Credits</strong></p>

@@ -95,8 +95,9 @@ button:hover{
 <div class="price">£5</div>
 
 <form method="POST" action="/buy-credits">
-<input type="hidden" name="pack" value="50">
-<button type="submit">Buy 50 Credits</button>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="pack" value="50">
+    <button type="submit">Buy 50 Credits</button>
 </form>
 
 </div>
@@ -106,8 +107,9 @@ button:hover{
 <div class="price">£15</div>
 
 <form method="POST" action="/buy-credits">
-<input type="hidden" name="pack" value="200">
-<button type="submit">Buy 200 Credits</button>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="pack" value="200">
+    <button type="submit">Buy 200 Credits</button>
 </form>
 
 </div>
@@ -117,8 +119,9 @@ button:hover{
 <div class="price">£35</div>
 
 <form method="POST" action="/buy-credits">
-<input type="hidden" name="pack" value="600">
-<button type="submit">Buy 600 Credits</button>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="pack" value="600">
+    <button type="submit">Buy 600 Credits</button>
 </form>
 
 </div>
