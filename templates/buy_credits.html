@@ -90,11 +90,13 @@ margin-bottom:16px;
 cursor:pointer;
 transition:all 0.2s ease;
 text-align:left;
+box-sizing:border-box;
 }
 
 .credit-option:hover{
 border-color:#6dd5ff;
 box-shadow:0 0 15px rgba(100,180,255,0.35);
+transform:translateY(-2px);
 }
 
 /* TEXT */
@@ -124,7 +126,36 @@ display:block;
 width:100%;
 cursor:pointer;
 }
+  
+.back-btn{
+display:inline-block;
+margin-bottom:20px;
+color:#9aa6ff;
+text-decoration:none;
+font-size:14px;
+}
 
+.back-btn:hover{
+color:#6dd5ff;
+}
+
+  .auth-footer{
+text-align:center;
+margin-top:30px;
+padding-bottom:20px;
+font-size:13px;
+color:#e5e5e5;
+}
+
+.auth-footer a{
+color:#e5e5e5;
+text-decoration:none;
+margin:0 6px;
+}
+
+.auth-footer a:hover{
+color:#6dd5ff;
+}
 </style>
 </head>
 
@@ -137,6 +168,8 @@ cursor:pointer;
 
 <div class="container">
 
+<a href="/generator" class="back-btn">← Back</a>
+  
 <h2>Buy Credits</h2>
 <p style="color:#9aa6ff;margin-bottom:25px;">
 Generate AI descriptions for your listings
@@ -212,6 +245,12 @@ For power sellers with large inventories
 </form>
 
 </div>
-
+<div class="auth-footer">
+    <a href="/terms">Terms</a>
+    <span>•</span>
+    <a href="/privacy">Privacy</a>
+    <span>•</span>
+    <a href="mailto:support@resellerdescriptions.com">Support</a>
+</div>
 </body>
 </html>
