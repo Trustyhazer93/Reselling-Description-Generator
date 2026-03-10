@@ -225,7 +225,7 @@ class PromoRedemption(db.Model):
 
 class Payment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     stripe_session_id = db.Column(db.String(255), unique=True, nullable=False)
     stripe_payment_intent_id = db.Column(db.String(255), nullable=True)
     stripe_customer_email = db.Column(db.String(120), nullable=True)
@@ -258,6 +258,26 @@ def get_credit_pack(pack_key):
 
 with app.app_context():
     db.create_all()
+
+    from sqlalchemy import text
+
+    result = db.session.execute(text("""
+        SELECT is_nullable
+        FROM information_schema.columns
+        WHERE table_name='payment' AND column_name='user_id';
+    """))
+
+    row = result.fetchone()
+
+    if row and row[0] == "NO":
+        db.session.execute(text("""
+            ALTER TABLE payment
+            ALTER COLUMN user_id DROP NOT NULL;
+        """))
+        db.session.commit()
+        print("payment.user_id is now nullable.")
+    else:
+        print("payment.user_id already nullable.")
 # -------------------------
 # OUTPUT VALIDATION
 # -------------------------
@@ -886,6 +906,7 @@ def delete_account():
         user_id = user.id
 
         PromoRedemption.query.filter_by(user_id=user_id).update({"user_id": None})
+        Payment.query.filter_by(user_id=user_id).update({"user_id": None})
         Generation.query.filter_by(user_id=user_id).delete()
         User.query.filter_by(id=user_id).delete()
 
