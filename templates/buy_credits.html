@@ -7,73 +7,122 @@
 <style>
 
 body{
-    margin:0;
-    font-family:Arial, sans-serif;
-    background:#0f0f12;
-    color:#e5e5e5;
+margin:0;
+font-family:Arial,sans-serif;
+background:#0f0f12;
+color:#e5e5e5;
+overflow-x:hidden;
 }
 
-/* PAGE CONTAINER */
+/* BACKGROUND */
+
+.triangle-bg{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+z-index:-1;
+pointer-events:none;
+}
+
+.triangle-grid{
+position:absolute;
+width:100%;
+height:100%;
+background-image:
+linear-gradient(60deg,#2a2a2f 1px,transparent 1px),
+linear-gradient(-60deg,#2a2a2f 1px,transparent 1px),
+linear-gradient(0deg,#2a2a2f 1px,transparent 1px);
+background-size:80px 70px;
+opacity:0.35;
+}
+
+.triangle-grid::after{
+content:"";
+position:absolute;
+width:100%;
+height:100%;
+background-image:radial-gradient(circle,#8a8a8a 1.5px,transparent 2px);
+background-size:80px 70px;
+opacity:0.4;
+}
+
+.glow-layer{
+position:absolute;
+width:200%;
+height:200%;
+background:
+radial-gradient(circle at 30% 40%, rgba(120,140,255,0.25), transparent 200px),
+radial-gradient(circle at 70% 70%, rgba(155,107,255,0.25), transparent 200px),
+radial-gradient(circle at 40% 80%, rgba(80,200,255,0.2), transparent 220px);
+animation:glowMove 25s linear infinite;
+}
+
+@keyframes glowMove{
+0%{transform:translate(-10%,-10%)}
+50%{transform:translate(-20%,-30%)}
+100%{transform:translate(-10%,-10%)}
+}
+
+/* CONTAINER */
 
 .container{
-    max-width:900px;
-    margin:auto;
-    padding:40px 20px;
-    text-align:center;
+max-width:700px;
+margin:auto;
+padding:30px;
+margin-top:60px;
+background:#15151c;
+border:1px solid #26263a;
+border-radius:10px;
+box-shadow:0 0 25px rgba(80,120,255,0.08);
 }
 
-/* TITLE */
+/* CREDIT OPTION BOX */
 
-h1{
-    margin-bottom:10px;
+.credit-option{
+width:100%;
+background:#111118;
+border:1px solid #26263a;
+border-radius:8px;
+padding:20px;
+margin-bottom:16px;
+cursor:pointer;
+transition:all 0.2s ease;
+text-align:left;
 }
 
-.subtitle{
-    color:#9ca3af;
-    margin-bottom:40px;
+.credit-option:hover{
+border-color:#6dd5ff;
+box-shadow:0 0 15px rgba(100,180,255,0.35);
 }
 
-/* CREDIT CARDS */
-
-.pricing{
-    display:flex;
-    gap:20px;
-    justify-content:center;
-    flex-wrap:wrap;
-}
-
-.card{
-    background:#17171c;
-    border:1px solid #2a2a33;
-    padding:30px;
-    width:240px;
-    border-radius:8px;
-}
-
-.card h2{
-    margin:0 0 10px 0;
-}
+/* TEXT */
 
 .price{
-    font-size:26px;
-    margin:10px 0 20px 0;
+font-size:28px;
+font-weight:bold;
+margin-bottom:4px;
 }
 
-/* BUTTON */
-
-button{
-    background:#6366f1;
-    border:none;
-    padding:12px 18px;
-    color:white;
-    border-radius:6px;
-    cursor:pointer;
-    width:100%;
-    font-size:16px;
+.credits{
+font-size:16px;
+color:#a0a0ff;
+margin-bottom:6px;
 }
 
-button:hover{
-    background:#4f46e5;
+.small-text{
+font-size:12px;
+color:#8f97bb;
+}
+
+/* BUTTON RESET */
+
+.credit-option button{
+all:unset;
+display:block;
+width:100%;
+cursor:pointer;
 }
 
 </style>
@@ -81,52 +130,86 @@ button:hover{
 
 <body>
 
-<a href="/generator" style="color:#9ca3af;">← Back</a>
+<div class="triangle-bg">
+<div class="triangle-grid"></div>
+<div class="glow-layer"></div>
+</div>
 
 <div class="container">
 
-<h1>Buy Credits</h1>
-<p class="subtitle">Generate AI descriptions for your listings</p>
+<h2>Buy Credits</h2>
+<p style="color:#9aa6ff;margin-bottom:25px;">
+Generate AI descriptions for your listings
+</p>
 
-<div class="pricing">
+<!-- 50 CREDITS -->
 
-<div class="card">
-<h2>50 Credits</h2>
+<form method="POST" action="/buy-credits">
+
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="pack" value="50">
+
+<div class="credit-option" onclick="this.closest('form').submit()">
+
+<button>
+
 <div class="price">£5</div>
+<div class="credits">50 Credits</div>
+<div class="small-text">
+Perfect for casual sellers
+</div>
 
-<form method="POST" action="/buy-credits">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input type="hidden" name="pack" value="50">
-    <button type="submit">Buy 50 Credits</button>
-</form>
+</button>
 
 </div>
 
-<div class="card">
-<h2>200 Credits</h2>
+</form>
+
+<!-- 200 CREDITS -->
+
+<form method="POST" action="/buy-credits">
+
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="pack" value="200">
+
+<div class="credit-option" onclick="this.closest('form').submit()">
+
+<button>
+
 <div class="price">£15</div>
+<div class="credits">200 Credits</div>
+<div class="small-text">
+Best value for regular resellers
+</div>
 
-<form method="POST" action="/buy-credits">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input type="hidden" name="pack" value="200">
-    <button type="submit">Buy 200 Credits</button>
-</form>
+</button>
 
 </div>
 
-<div class="card">
-<h2>600 Credits</h2>
+</form>
+
+<!-- 600 CREDITS -->
+
+<form method="POST" action="/buy-credits">
+
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+<input type="hidden" name="pack" value="600">
+
+<div class="credit-option" onclick="this.closest('form').submit()">
+
+<button>
+
 <div class="price">£35</div>
+<div class="credits">600 Credits</div>
+<div class="small-text">
+For power sellers with large inventories
+</div>
 
-<form method="POST" action="/buy-credits">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <input type="hidden" name="pack" value="600">
-    <button type="submit">Buy 600 Credits</button>
+</button>
+
+</div>
+
 </form>
-
-</div>
-
-</div>
 
 </div>
 
