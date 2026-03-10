@@ -766,10 +766,7 @@ def redeem_code():
 
 
 from datetime import datetime, timedelta
-from sqlalchemy import func
 
-from datetime import datetime, timedelta
-from sqlalchemy import func
 
 @app.route("/admin/promos")
 @login_required
@@ -791,14 +788,34 @@ def admin_promos():
         func.coalesce(func.sum(PromoCode.uses_count), 0)
     ).scalar()
 
-    estimated_profit = "0.00"
+    monthly_revenue_pence = db.session.query(
+        func.coalesce(func.sum(Payment.amount_total), 0)
+    ).filter(
+        Payment.status == "completed",
+        Payment.created_at >= thirty_days_ago
+    ).scalar()
+
+    monthly_revenue = monthly_revenue_pence / 100
+
+    monthly_generations = Generation.query.filter(
+        Generation.created_at >= thirty_days_ago
+    ).count()
+
+    monthly_ai_cost = monthly_generations * 0.02
+    monthly_render_cost = 25
+    estimated_profit_value = monthly_revenue - monthly_ai_cost - monthly_render_cost
+    estimated_profit = f"{estimated_profit_value:.2f}"
 
     return render_template(
         "admin_promos.html",
         promos=promos,
         active_customers=active_customers,
         estimated_profit=estimated_profit,
-        total_promo_uses=total_promo_uses
+        total_promo_uses=total_promo_uses,
+        monthly_revenue=f"{monthly_revenue:.2f}",
+        monthly_generations=monthly_generations,
+        monthly_ai_cost=f"{monthly_ai_cost:.2f}",
+        monthly_render_cost=f"{monthly_render_cost:.2f}"
     )
 
 @app.route("/admin/promos/create", methods=["POST"])
