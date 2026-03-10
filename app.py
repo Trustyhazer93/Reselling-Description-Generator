@@ -256,28 +256,7 @@ def get_credit_pack(pack_key):
     }
     return packs.get(pack_key)
 
-with app.app_context():
-    db.create_all()
 
-    from sqlalchemy import text
-
-    result = db.session.execute(text("""
-        SELECT is_nullable
-        FROM information_schema.columns
-        WHERE table_name='payment' AND column_name='user_id';
-    """))
-
-    row = result.fetchone()
-
-    if row and row[0] == "NO":
-        db.session.execute(text("""
-            ALTER TABLE payment
-            ALTER COLUMN user_id DROP NOT NULL;
-        """))
-        db.session.commit()
-        print("payment.user_id is now nullable.")
-    else:
-        print("payment.user_id already nullable.")
 # -------------------------
 # OUTPUT VALIDATION
 # -------------------------
