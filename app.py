@@ -787,6 +787,10 @@ def admin_promos():
         func.coalesce(func.sum(PromoCode.uses_count), 0)
     ).scalar()
 
+    total_generations = db.session.query(
+        func.count(Generation.id)
+    ).scalar()
+
     monthly_revenue_pence = db.session.query(
         func.coalesce(func.sum(Payment.amount_total), 0)
     ).filter(
@@ -811,6 +815,7 @@ def admin_promos():
         active_customers=active_customers,
         estimated_profit=estimated_profit,
         total_promo_uses=total_promo_uses,
+        total_generations=total_generations,
         monthly_revenue=f"{monthly_revenue:.2f}",
         monthly_generations=monthly_generations,
         monthly_ai_cost=f"{monthly_ai_cost:.2f}",
