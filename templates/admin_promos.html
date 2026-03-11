@@ -356,11 +356,17 @@
             <div class="stat-label">Total Listings Generated</div>
             <div class="stat-value">{{ total_generations }}</div>
         </div>
-        
+
         <div class="stat-card ui-box">
             <div class="stat-label">Total Users</div>
             <div class="stat-value">{{ total_users }}</div>
         </div>
+        <div class="stat-card ui-box">
+    <div class="stat-label">Last User Signup</div>
+        <div class="stat-value">
+            {{ last_signup.strftime("%d %b %Y %H:%M") if last_signup else "None" }}
+        </div>
+    </div>
     </div>
 
     <div class="content-grid">

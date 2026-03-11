@@ -804,6 +804,10 @@ def admin_promos():
         Generation.created_at >= thirty_days_ago
     ).count()
 
+    last_signup = db.session.query(
+        func.max(User.created_at)
+    ).scalar()
+
     monthly_ai_cost = monthly_generations * 0.02
     monthly_render_cost = 25
     estimated_profit_value = monthly_revenue - monthly_ai_cost - monthly_render_cost
@@ -817,6 +821,7 @@ def admin_promos():
         total_promo_uses=total_promo_uses,
         total_generations=total_generations,
         total_users = User.query.count(),
+        last_signup=last_signup,
         monthly_revenue=f"{monthly_revenue:.2f}",
         monthly_generations=monthly_generations,
         monthly_ai_cost=f"{monthly_ai_cost:.2f}",
