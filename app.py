@@ -816,6 +816,7 @@ def admin_promos():
         estimated_profit=estimated_profit,
         total_promo_uses=total_promo_uses,
         total_generations=total_generations,
+        total_users = User.query.count(),
         monthly_revenue=f"{monthly_revenue:.2f}",
         monthly_generations=monthly_generations,
         monthly_ai_cost=f"{monthly_ai_cost:.2f}",
