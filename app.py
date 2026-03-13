@@ -902,17 +902,17 @@ def send_feedback_batch():
 
     for user in users:
 
-    if user.email == "surajbokhiriya@icloud.com":
-        continue
-
-    sent = send_feedback_email(user.email)
-
-    if sent:
-        success_count += 1
-    else:
-        fail_count += 1
-
-    time.sleep(0.6)
+        if user.email == "surajbokhiriya@icloud.com":
+            continue
+    
+        sent = send_feedback_email(user.email)
+    
+        if sent:
+            success_count += 1
+        else:
+            fail_count += 1
+    
+        time.sleep(0.6)
 
     return f"Feedback batch complete. Sent: {success_count}, Failed: {fail_count}"
 
