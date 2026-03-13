@@ -882,6 +882,7 @@ def create_promo():
 
     return redirect(url_for("admin_promos"))
 
+import time
 @app.route("/admin/send-feedback-batch")
 @login_required
 def send_feedback_batch():
@@ -900,11 +901,18 @@ def send_feedback_batch():
     fail_count = 0
 
     for user in users:
-        sent = send_feedback_email(user.email)
-        if sent:
-            success_count += 1
-        else:
-            fail_count += 1
+
+    if user.email == "surajbokhiriya@icloud.com":
+        continue
+
+    sent = send_feedback_email(user.email)
+
+    if sent:
+        success_count += 1
+    else:
+        fail_count += 1
+
+    time.sleep(0.6)
 
     return f"Feedback batch complete. Sent: {success_count}, Failed: {fail_count}"
 
