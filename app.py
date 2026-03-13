@@ -605,7 +605,7 @@ def register():
             email=email,
             normalized_email=normalized_email,
             password_hash=hashed_password,
-            credits=0,
+            credits=10,
             is_verified=False,
         )
 
