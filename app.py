@@ -104,8 +104,8 @@ STRICT RULES:
 ACCURACY FIRST
 - Base ALL information ONLY on what is visible in the images.
 - Do NOT guess brand, size, material, or features.
-- If brand is unclear, leave blank.
-- If size is unclear, leave blank.
+- If brand is unclear write: Unknown
+- If size is unclear write: Unknown
 - Do not invent details not visible.
 
 CONDITION ASSESSMENT
@@ -285,7 +285,16 @@ def validate_and_fix_listing(raw_output):
         title = "Clothing Item"
         fallback_used = True
 
+    if not brand:
+        brand = "Unknown"
+        fallback_used = True
+
+    if not size:
+        size = "Unknown"
+        fallback_used = True
+
     if not condition:
+        condition = "Unknown"
         fallback_used = True
 
     flaws_block_match = re.search(
