@@ -1087,6 +1087,56 @@ def stripe_webhook():
                 db.session.commit()
 
     return "OK", 200
+
+@app.route("/admin/grant-free-trial")
+@login_required
+def grant_free_trial():
+    if not current_user.is_admin:
+        abort(403)
+
+    users = User.query.filter(User.credits == 0).all()
+
+    updated_count = 0
+    emailed_count = 0
+    failed_emails = []
+
+    for user in users:
+        try:
+            user.credits += 10
+            updated_count += 1
+
+            resend.Emails.send({
+                "from": "Reseller Descriptions <support@resellerdescriptions.com>",
+                "to": [user.email],
+                "subject": "10 free credits have been added to your account",
+                "html": f"""
+                <p>Hi,</p>
+
+                <p>I’ve now introduced a free trial on Reseller Descriptions.</p>
+
+                <p>Because you signed up before this was added, I've added 10 free credits to your account so you can try it out.</p>
+
+                <p>You can now log in and start generating listings straight away.</p>
+
+                <p><a href="https://resellerdescriptions.com/login">Log in here</a></p>
+
+                <p>Thanks,<br>Harry</p>
+                """
+            })
+
+            emailed_count += 1
+
+        except Exception as e:
+            failed_emails.append(f"{user.email}: {str(e)}")
+
+    db.session.commit()
+
+    return f"""
+    Credits added to {updated_count} users.<br>
+    Emails sent to {emailed_count} users.<br><br>
+    Failed emails:<br>
+    {'<br>'.join(failed_emails) if failed_emails else 'None'}
+    """
 # -------------------------
 # MAIN ROUTE
 # -------------------------
