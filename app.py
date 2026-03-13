@@ -260,39 +260,7 @@ def get_credit_pack(pack_key):
 # -------------------------
 # OUTPUT VALIDATION
 # -------------------------
-def send_feedback_email(to_email):
-    api_key = os.getenv("RESEND_API_KEY")
 
-    if not api_key:
-        print("RESEND_API_KEY not found!")
-        return False
-
-    survey_url = "https://docs.google.com/forms/d/e/1FAIpQLSfHu3BR0JKFNl3NohnerPP-z7wQwxk-N053Ky2-x0AZTeub_Q/viewform?usp=sharing&ouid=111029793169100977981"
-
-    response = requests.post(
-        "https://api.resend.com/emails",
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        },
-        json={
-            "from": "Reseller Descriptions <noreply@resellerdescriptions.com>",
-            "to": to_email,
-            "subject": "What would make the generator more useful for you?",
-            "text": (
-                "Hi,\n\n"
-                "Thanks for using Reseller Descriptions.\n\n"
-                "I'm trying to improve the tool and would really value your feedback.\n\n"
-                "This quick survey takes less than 60 seconds:\n\n"
-                f"{survey_url}\n\n"
-                "Thanks for helping improve the tool!"
-            ),
-        },
-    )
-
-    print("Feedback email response:", response.status_code, response.text)
-    return response.status_code in [200, 201]
-    
 def validate_and_fix_listing(raw_output):
     if not raw_output:
         return "Error generating full listing.", True
@@ -881,40 +849,6 @@ def create_promo():
     db.session.commit()
 
     return redirect(url_for("admin_promos"))
-
-import time
-@app.route("/admin/send-feedback-batch")
-@login_required
-def send_feedback_batch():
-    if not current_user.is_admin:
-        return redirect(url_for("index"))
-
-    users = (
-        db.session.query(User)
-        .join(Generation, Generation.user_id == User.id)
-        .filter(User.is_verified == True)
-        .distinct()
-        .all()
-    )
-
-    success_count = 0
-    fail_count = 0
-
-    for user in users:
-
-        if user.email == "surajbokhiriya@icloud.com":
-            continue
-    
-        sent = send_feedback_email(user.email)
-    
-        if sent:
-            success_count += 1
-        else:
-            fail_count += 1
-    
-        time.sleep(0.6)
-
-    return f"Feedback batch complete. Sent: {success_count}, Failed: {fail_count}"
 
 @app.route("/admin/promos/toggle/<int:promo_id>")
 @login_required
