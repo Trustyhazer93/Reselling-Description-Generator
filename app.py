@@ -26,6 +26,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from sqlalchemy import func
 import stripe
+import resend
 
 
 # -------------------------
@@ -1088,51 +1089,59 @@ def stripe_webhook():
 
     return "OK", 200
 
-@app.route("/admin/grant-free-trial")
+@app.route("/admin/email-free-trial-users")
 @login_required
-def grant_free_trial():
+def email_free_trial_users():
     if not current_user.is_admin:
-        abort(403)
+        return redirect(url_for("index"))
 
-    users = User.query.filter(User.credits == 0).all()
+    api_key = os.getenv("RESEND_API_KEY")
 
-    updated_count = 0
+    if not api_key:
+        return "RESEND_API_KEY not found.", 500
+
+    users = User.query.filter(User.credits == 10).all()
+
     emailed_count = 0
     failed_emails = []
 
     for user in users:
         try:
-            user.credits += 10
-            updated_count += 1
+            response = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": "Harry @ Reseller Descriptions <support@resellerdescriptions.com>",
+                    "to": [user.email],
+                    "subject": "10 free credits have been added to your account",
+                    "html": f"""
+                    <p>Hi,</p>
 
-            resend.Emails.send({
-                "from": "Reseller Descriptions <support@resellerdescriptions.com>",
-                "to": [user.email],
-                "subject": "10 free credits have been added to your account",
-                "html": f"""
-                <p>Hi,</p>
+                    <p>I’ve now introduced a free trial on Reseller Descriptions.</p>
 
-                <p>I’ve now introduced a free trial on Reseller Descriptions.</p>
+                    <p>Because you signed up before this was added, I’ve added <strong>10 free credits</strong> to your account so you can try it out.</p>
 
-                <p>Because you signed up before this was added, I've added 10 free credits to your account so you can try it out.</p>
+                    <p>You can now log in and start generating listings straight away.</p>
 
-                <p>You can now log in and start generating listings straight away.</p>
+                    <p><a href="https://www.resellerdescriptions.com/login">Log in here</a></p>
 
-                <p><a href="https://resellerdescriptions.com/login">Log in here</a></p>
+                    <p>Thanks,<br>Harry</p>
+                    """,
+                },
+            )
 
-                <p>Thanks,<br>Harry</p>
-                """
-            })
-
-            emailed_count += 1
+            if response.status_code in [200, 201]:
+                emailed_count += 1
+            else:
+                failed_emails.append(f"{user.email}: {response.status_code} {response.text}")
 
         except Exception as e:
             failed_emails.append(f"{user.email}: {str(e)}")
 
-    db.session.commit()
-
     return f"""
-    Credits added to {updated_count} users.<br>
     Emails sent to {emailed_count} users.<br><br>
     Failed emails:<br>
     {'<br>'.join(failed_emails) if failed_emails else 'None'}
