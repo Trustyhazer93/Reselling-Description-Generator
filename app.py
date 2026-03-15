@@ -55,6 +55,11 @@ app.config["STRIPE_PRICE_50"] = os.getenv("STRIPE_PRICE_50")
 app.config["STRIPE_PRICE_200"] = os.getenv("STRIPE_PRICE_200")
 app.config["STRIPE_PRICE_600"] = os.getenv("STRIPE_PRICE_600")
 
+app.config["REMEMBER_COOKIE_DURATION"] = timedelta(days=30)
+app.config["REMEMBER_COOKIE_SECURE"] = True
+app.config["REMEMBER_COOKIE_HTTPONLY"] = True
+app.config["REMEMBER_COOKIE_SAMESITE"] = "Lax"
+
 stripe.api_key = app.config["STRIPE_SECRET_KEY"]
 
 serializer = URLSafeTimedSerializer(app.config["SECRET_KEY"])
@@ -550,7 +555,7 @@ def login():
                 response.headers["Expires"] = "0"
                 return response
 
-            login_user(user)
+            login_user(user, remember=True)
             return redirect(url_for("index"))
 
         response = make_response(render_template(
@@ -690,7 +695,7 @@ def verify_email(token):
     user.is_verified = True
     db.session.commit()
 
-    login_user(user)
+    login_user(user, remember=True)
     return redirect(url_for("index"))
 
 
