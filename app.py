@@ -235,6 +235,13 @@ class Payment(db.Model):
     status = db.Column(db.String(50), default="pending")
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class FreeTrialClaim(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    claimed_email = db.Column(db.String(120), nullable=False)
+    claimed_email_normalized = db.Column(db.String(120), nullable=True)
+    claimed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -610,15 +617,31 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
+        existing_free_trial = FreeTrialClaim.query.filter_by(
+            claimed_email_normalized=normalized_email
+        ).first()
+
+        starter_credits = 0 if existing_free_trial else 10
+
         new_user = User(
             email=email,
             normalized_email=normalized_email,
             password_hash=hashed_password,
-            credits=10,
+            credits=starter_credits,
             is_verified=False,
         )
 
         db.session.add(new_user)
+        db.session.flush()
+
+        if not existing_free_trial:
+            free_trial_claim = FreeTrialClaim(
+                user_id=new_user.id,
+                claimed_email=new_user.email,
+                claimed_email_normalized=new_user.normalized_email
+            )
+            db.session.add(free_trial_claim)
+
         db.session.commit()
 
         send_verification_email(new_user.email)
@@ -904,6 +927,7 @@ def delete_account():
         user_id = user.id
 
         PromoRedemption.query.filter_by(user_id=user_id).update({"user_id": None})
+        FreeTrialClaim.query.filter_by(user_id=user_id).update({"user_id": None})
         Payment.query.filter_by(user_id=user_id).update({"user_id": None})
         Generation.query.filter_by(user_id=user_id).delete()
         User.query.filter_by(id=user_id).delete()
